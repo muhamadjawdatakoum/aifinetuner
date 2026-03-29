@@ -29,7 +29,7 @@ Works with **Claude Code** · **OpenAI Codex** · **Cursor** · **Windsurf** · 
 ## How It Workswhat else is 
 
 ```
-You:   "fine-tune the shadow on this card"
+You:   " /ai-fine-tuner the shadow on this card"
             |
 Agent: "I'll generate a tuner for CardWidget with controls for
         shadow offset, blur, spread, color. I need to read
