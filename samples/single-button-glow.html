@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fine-Tuner: Button Shadow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ft-bg: #e5e5e5;
+      --ft-surface: #ffffff;
+      --ft-surface-2: #f5f5f5;
+      --ft-surface-3: #e0e0e0;
+      --ft-border: rgba(0,0,0,0.06);
+      --ft-border-strong: rgba(0,0,0,0.1);
+      --ft-text: #1e1e1e;
+      --ft-text-dim: #6b6b6b;
+      --ft-text-faint: #999999;
+      --ft-accent: #0c8ce9;
+      --ft-accent-hover: #0b7fd4;
+      --ft-accent-soft: rgba(12,140,233,0.08);
+      --ft-green: #18794e;
+      --ft-bar-h: 56px;
+      --ft-nav-h: 48px;
+      --ft-ease: cubic-bezier(0.2, 0, 0, 1);
+      --ft-duration: 0.25s;
+    }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--ft-bg); color: var(--ft-text);
+    }
+
+    /* === PREVIEW (trackpad-ready infinite canvas) === */
+    .ft-preview {
+      position: absolute; top: var(--ft-nav-h); left: 0; right: 0;
+      bottom: var(--ft-bar-h);
+      overflow: hidden; cursor: grab;
+      background-color: var(--ft-bg);
+      transition: bottom var(--ft-duration) var(--ft-ease), background-color 0.4s ease;
+      will-change: bottom;
+      touch-action: none;
+    }
+    .ft-preview::before,
+    .ft-preview::after {
+      content: ''; position: absolute; inset: 0;
+      background-size: 20px 20px;
+      pointer-events: none; z-index: 0;
+      transition: opacity 0.4s ease;
+    }
+    .ft-preview::before {
+      background: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .ft-preview::after {
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0;
+    }
+    .ft-preview.dark { background-color: #1e1e1e; }
+    .ft-preview.dark::before { opacity: 0; }
+    .ft-preview.dark::after { opacity: 1; }
+    .ft-preview:active { cursor: grabbing; }
+    .ft-preview-badge {
+      position: absolute; top: 14px; right: 16px; font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--ft-text-faint); user-select: none; pointer-events: none; font-weight: 600;
+      z-index: 1; transition: color 0.4s ease;
+    }
+    .ft-preview.dark .ft-preview-badge { color: #666; }
+    .ft-canvas {
+      position: absolute; top: 50%; left: 50%;
+      transform-origin: 0 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .ft-canvas > * { pointer-events: auto; }
+
+    /* === BOTTOM BAR (fixed, slide down) === */
+    .ft-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--ft-bar-h);
+      background: var(--ft-surface);
+      border-top: 1px solid var(--ft-border);
+      padding: 0 24px;
+      display: flex; align-items: center; gap: 20px;
+      box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+      z-index: 20;
+      transform: translateY(0);
+      transition: transform var(--ft-duration) var(--ft-ease);
+      will-change: transform;
+    }
+    .ft-bar.collapsed { transform: translateY(100%); }
+    .ft-bar.collapsed ~ .ft-preview { bottom: 0; }
+    .ft-bar-title {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--ft-text); white-space: nowrap;
+    }
+    .ft-bar-control { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .ft-bar-label { font-size: 11px; color: var(--ft-text-dim); white-space: nowrap; font-weight: 500; }
+    .ft-bar-val {
+      font-size: 11px; color: var(--ft-accent); font-weight: 600;
+      font-variant-numeric: tabular-nums; min-width: 42px; text-align: right;
+      white-space: nowrap; font-family: 'SF Mono', 'Fira Code', monospace;
+      background: none; border: 1px solid transparent; border-radius: 4px;
+      padding: 2px 4px; outline: none; cursor: text;
+      transition: border-color 0.15s ease;
+    }
+    .ft-bar-val:hover { border-color: var(--ft-border-strong); }
+    .ft-bar-val:focus { border-color: var(--ft-accent); background: var(--ft-surface-2); }
+
+    /* Collapse button inside bar */
+    .ft-collapse-btn {
+      width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
+      background: transparent; border: 1px solid transparent;
+      color: var(--ft-text-faint); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .ft-collapse-btn:hover { background: var(--ft-surface-2); border-color: var(--ft-border-strong); color: var(--ft-text); }
+    .ft-collapse-btn svg { width: 14px; height: 14px; }
+
+    /* Re-open tab */
+    .ft-expand-tab {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 10;
+      width: 40px; height: 20px;
+      background: var(--ft-surface); border: 1px solid var(--ft-border-strong);
+      border-bottom: none; border-radius: 8px 8px 0 0;
+      color: var(--ft-text-faint); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.06);
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--ft-duration) var(--ft-ease);
+    }
+    .ft-expand-tab svg { width: 12px; height: 12px; }
+    .ft-expand-tab:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-bar.collapsed ~ .ft-expand-tab { opacity: 1; pointer-events: auto; }
+
+    /* === SLIDER === */
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; flex: 1; min-width: 80px;
+      height: 4px; border-radius: 2px; background: var(--ft-surface-3);
+      outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; cursor: grab;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.15);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%; border: none;
+      background: #fff; cursor: grab;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.15);
+    }
+    input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ft-surface-3); border: none; }
+    input[type="text"] {
+      width: 120px; padding: 4px 8px; background: var(--ft-surface-2); color: var(--ft-text);
+      border: 1px solid var(--ft-border-strong); border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px; outline: none; transition: border-color 0.15s ease;
+    }
+    input[type="text"]:focus { border-color: var(--ft-accent); }
+
+    /* === BUTTONS === */
+    .ft-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .ft-btn-sm {
+      padding: 5px 10px; font-size: 11px; font-family: inherit; font-weight: 500;
+      background: var(--ft-surface); color: var(--ft-text-dim);
+      border: 1px solid var(--ft-border-strong); border-radius: 6px;
+      cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+    }
+    .ft-btn-sm:hover { color: var(--ft-text); border-color: rgba(0,0,0,0.2); background: var(--ft-surface-2); }
+    .ft-copy {
+      padding: 6px 14px; font-size: 11px; font-family: inherit; font-weight: 600;
+      background: var(--ft-accent); color: #fff;
+      border: none; border-radius: 6px; cursor: pointer;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .ft-copy:hover { background: var(--ft-accent-hover); }
+    .ft-copy.copied { background: var(--ft-green); }
+
+    /* === ZOOM HUD === */
+    .ft-zoom-controls {
+      position: absolute; bottom: 12px; left: 14px;
+      display: flex; gap: 1px; z-index: 10;
+      background: var(--ft-surface); border-radius: 6px;
+      box-shadow: 0 0 0 1px var(--ft-border-strong), 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .ft-zoom-btn {
+      width: 28px; height: 28px; background: var(--ft-surface); border: none;
+      color: var(--ft-text-dim); font-size: 14px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.4s ease; font-family: inherit; line-height: 1;
+    }
+    .ft-zoom-btn:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-zoom-label {
+      height: 28px; padding: 0 8px; background: var(--ft-surface);
+      color: var(--ft-text-dim); font-size: 10px; font-weight: 600;
+      display: flex; align-items: center;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      border-left: 1px solid var(--ft-border); border-right: 1px solid var(--ft-border);
+      transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+    .ft-reset-btn {
+      position: absolute; bottom: 12px; right: 14px; z-index: 10;
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--ft-surface); border: none;
+      box-shadow: 0 0 0 1px var(--ft-border-strong), 0 1px 3px rgba(0,0,0,0.08);
+      color: var(--ft-text-dim); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s, box-shadow 0.4s ease;
+    }
+    .ft-reset-btn:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-reset-btn svg { width: 14px; height: 14px; }
+    .ft-preview.dark .ft-zoom-controls { background: #2a2a2a; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.3); }
+    .ft-preview.dark .ft-zoom-btn { background: #2a2a2a; color: #999; }
+    .ft-preview.dark .ft-zoom-btn:hover { background: #3a3a3a; color: #fff; }
+    .ft-preview.dark .ft-zoom-label { background: #2a2a2a; color: #999; border-color: rgba(255,255,255,0.08); }
+    .ft-preview.dark .ft-reset-btn { background: #2a2a2a; color: #999; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.3); }
+    .ft-preview.dark .ft-reset-btn:hover { background: #3a3a3a; color: #fff; }
+
+    /* === THE ELEMENT === */
+    .el-btn {
+      position: relative; z-index: 1;
+      padding: 14px 32px; font-family: 'Inter', sans-serif; font-size: 14px;
+      font-weight: 600; letter-spacing: -0.02em;
+      background: #ffffff;
+      color: #09090b; border: none; border-radius: 10px; cursor: pointer;
+      transition: box-shadow 0.08s linear, transform 0.1s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .el-btn:hover { transform: translateY(-1px); }
+    .el-btn:active { transform: translateY(0); }
+
+    /* Always allow the bar to wrap when content overflows */
+    .ft-bar { flex-wrap: wrap; }
+    @media (max-width: 900px) {
+      .ft-bar { height: auto; padding: 12px 16px; gap: 8px 16px; }
+      .ft-bar-control { flex: 1 1 200px; min-width: 200px; }
+      .ft-actions { flex-wrap: wrap; }
+    }
+    @media (max-width: 600px) {
+      .ft-bar { gap: 8px 12px; }
+      .ft-bar-control { width: 100%; }
+      .ft-actions { width: 100%; justify-content: flex-end; }
+    }
+    /* === IFRAME EMBED === */
+    .ft-embedded .ft-nav { display: none; }
+    .ft-embedded .ft-preview { top: 0; }
+
+    /* === NAV === */
+    .ft-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: var(--ft-nav-h); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(250,250,250,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+    }
+    .ft-nav-logo {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; color: var(--ft-text);
+      text-decoration: none; letter-spacing: -0.3px;
+    }
+    .ft-nav-mark {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--ft-accent); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ft-nav-mark svg { width: 14px; height: 14px; }
+    .ft-nav-logo { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; font-weight: 700; letter-spacing: -0.2px; }
+    .ft-nav-links { display: flex; align-items: center; gap: 2px; }
+    .ft-nav-link {
+      padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      color: var(--ft-text-dim); text-decoration: none; transition: color 0.15s, background 0.15s;
+    }
+    .ft-nav-link:hover { color: var(--ft-text); background: var(--ft-surface-2); }
+    .ft-nav-link.active { color: var(--ft-accent); }
+    .ft-nav-gh {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      color: var(--ft-text); text-decoration: none;
+      border: 1px solid var(--ft-border-strong); transition: border-color 0.15s;
+    }
+    .ft-nav-gh:hover { border-color: var(--ft-text); }
+    .ft-nav-gh svg { width: 14px; height: 14px; }
+  </style>
+</head>
+<body>
+  <nav class="ft-nav">
+    <a href="index.html" class="ft-nav-logo"><span class="ft-nav-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><circle cx="4" cy="12" r="2" fill="#fff"/><circle cx="12" cy="10" r="2" fill="#fff"/><circle cx="20" cy="14" r="2" fill="#fff"/></svg></span> AI Fine-Tuner</a>
+    <div class="ft-nav-links">
+      <a href="single-button-glow.html" class="ft-nav-link active">Single</a>
+      <a href="small-pricing-card.html" class="ft-nav-link">Small</a>
+      <a href="full-dashboard-card.html" class="ft-nav-link">Full</a>
+      <a href="https://github.com/muhamadjawdatsalemalakoum/aifinetuner" class="ft-nav-gh" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> GitHub</a>
+    </div>
+  </nav>
+  <div class="ft-bar" id="ft-bar">
+    <button class="ft-collapse-btn" onclick="togglePanel()" title="Hide controls">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4,6 8,10 12,6"/>
+      </svg>
+    </button>
+    <span class="ft-bar-title">Button Shadow</span>
+    <div class="ft-bar-control">
+      <span class="ft-bar-label">shadow</span>
+      <input type="range" id="glow" min="0" max="60" step="1" value="20" oninput="update()" aria-label="Shadow depth">
+      <input class="ft-bar-val" id="ft-val" value="20px" onchange="valInput('glow',this)" onclick="this.select()">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:11px;color:var(--ft-text-dim);font-weight:500;">Label</span>
+      <input type="text" id="btn-text" value="Launch Project" placeholder="Button text" oninput="update()">
+    </div>
+    <div class="ft-actions">
+      <button class="ft-btn-sm" onclick="setValues({glow:0})">Flat</button>
+      <button class="ft-btn-sm" onclick="setValues({glow:12})">Subtle</button>
+      <button class="ft-btn-sm" onclick="setValues({glow:24})">Medium</button>
+      <button class="ft-btn-sm" onclick="setValues({glow:48})">Deep</button>
+      <button class="ft-btn-sm" onclick="toggleBg()" id="ft-bg-toggle" title="Toggle light/dark preview" style="display:inline-flex;align-items:center;gap:4px;"><svg id="ft-bg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><span id="ft-bg-label">Light</span></button>
+      <button class="ft-copy" id="ft-copy-btn" onclick="copyAll()">Copy to Clipboard</button>
+    </div>
+  </div>
+  <button class="ft-expand-tab" onclick="togglePanel()" title="Show controls">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4,10 8,6 12,10"/>
+    </svg>
+  </button>
+  <div class="ft-preview" id="ft-preview">
+    <span class="ft-preview-badge">preview</span>
+    <div class="ft-zoom-controls">
+      <button class="ft-zoom-btn" onclick="zoomBtn(-1)" title="Zoom out">−</button>
+      <span class="ft-zoom-label" id="ft-zoom-val">100%</span>
+      <button class="ft-zoom-btn" onclick="zoomBtn(1)" title="Zoom in">+</button>
+    </div>
+    <button class="ft-reset-btn" onclick="centerCanvas(true)" title="Reset view">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><line x1="8" y1="1" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="15"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="15" y2="8"/></svg>
+    </button>
+    <div class="ft-canvas" id="ft-canvas">
+      <button class="el-btn" id="el">Launch Project</button>
+    </div>
+  </div>
+  <pre id="ft-code" hidden></pre>
+  <script>
+    if(window.self!==window.top)document.body.classList.add('ft-embedded');
+    function updateTrack(input) {
+      const pct = (input.value - input.min) / (input.max - input.min) * 100;
+      input.style.background = 'linear-gradient(90deg, #0c8ce9 0%, #0c8ce9 ' + pct + '%, #e0e0e0 ' + pct + '%, #e0e0e0 100%)';
+    }
+    function update(){
+      const g=+document.getElementById('glow').value;
+      const el=document.getElementById('el');
+      el.textContent=document.getElementById('btn-text').value||'Launch Project';
+      el.style.boxShadow='0 '+(Math.round(g/5))+'px '+g+'px rgba(0,0,0,'+(0.04+g/200).toFixed(2)+')';
+      document.getElementById('ft-val').value=g+'px';
+      document.getElementById('ft-code').textContent='box-shadow: 0 '+(Math.round(g/5))+'px '+g+'px rgba(0,0,0,'+(0.04+g/200).toFixed(2)+');';
+      updateTrack(document.getElementById('glow'));
+    }
+    function copyAll(){
+      navigator.clipboard.writeText('/* Fine-Tuned: button-shadow | src/components/Button.tsx */\n\n'+document.getElementById('ft-code').textContent).then(()=>{
+        const b=document.getElementById('ft-copy-btn');b.textContent='Copied!';b.classList.add('copied');
+        setTimeout(()=>{b.textContent='Copy to Clipboard';b.classList.remove('copied');},1500);
+      });
+    }
+    function setValues(v){Object.entries(v).forEach(([id,val])=>{const e=document.getElementById(id);if(e)e.value=val;});update();}
+    function toggleBg(){
+      var p=document.getElementById('ft-preview');p.classList.toggle('dark');
+      var icon=document.getElementById('ft-bg-icon');
+      var isDark=p.classList.contains('dark');
+      document.getElementById('ft-bg-label').textContent=isDark?'Dark':'Light';
+      while(icon.firstChild)icon.removeChild(icon.firstChild);
+      if(isDark){
+        var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d','M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z');
+        icon.appendChild(path);
+      } else {
+        var c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx','12');c.setAttribute('cy','12');c.setAttribute('r','5');icon.appendChild(c);
+        [[12,1,12,3],[12,21,12,23],[4.22,4.22,5.64,5.64],[18.36,18.36,19.78,19.78],[1,12,3,12],[21,12,23,12],[4.22,19.78,5.64,18.36],[18.36,5.64,19.78,4.22]].forEach(function(l){
+          var ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+          ln.setAttribute('x1',l[0]);ln.setAttribute('y1',l[1]);ln.setAttribute('x2',l[2]);ln.setAttribute('y2',l[3]);icon.appendChild(ln);
+        });
+      }
+    }
+    function togglePanel(){
+      document.getElementById('ft-bar').classList.toggle('collapsed');
+      syncPreviewBottom();
+    }
+    function syncPreviewBottom(){
+      var bar=document.getElementById('ft-bar');
+      var collapsed=bar.classList.contains('collapsed');
+      document.getElementById('ft-preview').style.bottom=collapsed?'0':bar.offsetHeight+'px';
+    }
+    function valInput(sliderId, input) {
+      const slider = document.getElementById(sliderId);
+      if (!slider) return;
+      const num = parseFloat(input.value);
+      if (!isNaN(num)) slider.value = Math.max(+slider.min, Math.min(+slider.max, num));
+      update();
+    }
+
+    /* === Trackpad pan & pinch-zoom === */
+    let panX = 0, panY = 0, zoom = 1;
+    const canvas = document.getElementById('ft-canvas');
+    const preview = document.getElementById('ft-preview');
+
+    function applyTransform() {
+      canvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + zoom + ')';
+      document.getElementById('ft-zoom-val').textContent = Math.round(zoom * 100) + '%';
+    }
+
+    /* Wheel events already reflect OS scroll-direction settings (natural/inverted).
+       deltaY>0 always means "scroll content down", regardless of OS preference. */
+    preview.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        /* Pinch-to-zoom — multiplicative scaling for consistent feel */
+        var factor = Math.pow(0.998, e.deltaY);
+        var nz = Math.min(4, Math.max(0.25, zoom * factor));
+        var rect = preview.getBoundingClientRect();
+        var cx = e.clientX - rect.left - rect.width/2, cy = e.clientY - rect.top - rect.height/2;
+        var ratio = nz / zoom;
+        panX = cx - ratio * (cx - panX);
+        panY = cy - ratio * (cy - panY);
+        zoom = nz;
+      } else {
+        /* Two-finger pan — follows native scroll direction */
+        panX -= e.deltaX;
+        panY -= e.deltaY;
+      }
+      applyTransform();
+    }, { passive: false });
+
+    /* === Mouse drag to pan === */
+    let dragging=false, dragX=0, dragY=0;
+    preview.addEventListener('pointerdown',function(e){
+      if(e.button!==0||e.target.closest('.ft-zoom-controls,.ft-reset-btn,.ft-canvas *'))return;
+      dragging=true; dragX=e.clientX; dragY=e.clientY;
+      preview.setPointerCapture(e.pointerId);
+    });
+    preview.addEventListener('pointermove',function(e){
+      if(!dragging)return;
+      panX+=e.clientX-dragX; panY+=e.clientY-dragY;
+      dragX=e.clientX; dragY=e.clientY;
+      applyTransform();
+    });
+    preview.addEventListener('pointerup',function(){ dragging=false; });
+    preview.addEventListener('pointercancel',function(){ dragging=false; });
+
+    function zoomBtn(dir) {
+      const newZoom = Math.min(4, Math.max(0.25, zoom + dir * 0.1));
+      const cx = 0;
+      const cy = 0;
+      const ratio = newZoom / zoom;
+      panX = cx - ratio * (cx - panX);
+      panY = cy - ratio * (cy - panY);
+      zoom = newZoom;
+      applyTransform();
+    }
+
+    function centerCanvas(animate){
+      var child=canvas.firstElementChild;
+      var tX,tY,tZ=1;
+      if(child){var r=child.getBoundingClientRect();var s=zoom;tX=-((r.width/s)/2);tY=-((r.height/s)/2);}
+      else{tX=0;tY=0;}
+      if(!animate){panX=tX;panY=tY;zoom=tZ;applyTransform();return;}
+      var sX=panX,sY=panY,sZ=zoom,start=null,dur=400;
+      function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+      function step(ts){
+        if(!start)start=ts;var t=Math.min((ts-start)/dur,1),e=ease(t);
+        panX=sX+(tX-sX)*e;panY=sY+(tY-sY)*e;zoom=sZ+(tZ-sZ)*e;
+        applyTransform();if(t<1)requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    preview.addEventListener('dblclick', function(e) {
+      if (e.target.closest('.ft-zoom-controls')) return;
+      centerCanvas(true);
+    });
+
+    update();
+    syncPreviewBottom();
+    window.addEventListener('resize', syncPreviewBottom);
+    centerCanvas();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "name": "ai-fine-tuner",
+  "version": "1.0.0",
+  "description": "Generate interactive HTML fine-tuning GUIs with real-time sliders, infinite canvas preview, and authentic live reproduction of your actual element. AI Fine-Tuner teaches any AI coding agent to produce a single-file tuning interface — for existing elements or newly built ones — instead of iterating on values in chat. Proactively suggests itself when the agent detects iteration or vague visual feedback.",
+  "author": {
+    "name": "Muhamad Jawdat Salem Alakoum"
+  },
+  "repository": "https://github.com/muhamadjawdatsalemalakoum/aifinetuner",
+  "homepage": "https://muhamadjawdatsalemalakoum.github.io/aifinetuner",
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": [
+    "fine-tune",
+    "tweak",
+    "ai-fine-tuner",
+    "sliders",
+    "visual-tuning",
+    "css",
+    "tailwind",
+    "flutter",
+    "swiftui",
+    "react-native",
+    "interactive",
+    "gui",
+    "animation",
+    "easing",
+    "transform",
+    "filter",
+    "typography",
+    "shadow",
+    "gradient",
+    "svg",
+    "multi-state",
+    "proactive",
+    "parameter-tuning"
+  ],
+  "skills": "./skills/"
+}

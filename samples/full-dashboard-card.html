@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fine-Tuner: Dashboard Card</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ft-bg: #e5e5e5;
+      --ft-surface: #ffffff;
+      --ft-surface-2: #f5f5f5;
+      --ft-surface-3: #e0e0e0;
+      --ft-border: rgba(0,0,0,0.06);
+      --ft-border-strong: rgba(0,0,0,0.1);
+      --ft-text: #1e1e1e;
+      --ft-text-dim: #6b6b6b;
+      --ft-text-faint: #999999;
+      --ft-accent: #0c8ce9;
+      --ft-accent-hover: #0b7fd4;
+      --ft-accent-soft: rgba(12,140,233,0.08);
+      --ft-green: #18794e;
+      --ft-panel-w: 320px;
+      --ft-nav-h: 48px;
+      --ft-ease: cubic-bezier(0.2, 0, 0, 1);
+      --ft-duration: 0.25s;
+    }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--ft-bg); color: var(--ft-text);
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.18); }
+
+    /* === SIDEBAR — fixed, GPU-accelerated slide === */
+    .ft-controls {
+      position: fixed; top: var(--ft-nav-h); left: 0; bottom: 0;
+      width: var(--ft-panel-w);
+      background: var(--ft-surface);
+      border-right: 1px solid var(--ft-border);
+      display: flex; flex-direction: column;
+      z-index: 20;
+      transform: translateX(0);
+      transition: transform var(--ft-duration) var(--ft-ease);
+      will-change: transform;
+    }
+    .ft-controls.collapsed {
+      transform: translateX(-100%);
+    }
+
+    /* === MAIN CONTENT — margin push === */
+    .ft-preview {
+      position: absolute; top: var(--ft-nav-h); right: 0; bottom: 0;
+      left: var(--ft-panel-w);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      background-color: var(--ft-bg);
+      transition: left var(--ft-duration) var(--ft-ease), background-color 0.4s ease;
+      will-change: left;
+    }
+    .ft-preview::before,
+    .ft-preview::after {
+      content: ''; position: absolute; inset: 0;
+      background-size: 20px 20px;
+      pointer-events: none; z-index: 0;
+      transition: opacity 0.4s ease;
+    }
+    .ft-preview::before {
+      background: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .ft-preview::after {
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0;
+    }
+    .ft-preview.dark { background-color: #1e1e1e; }
+    .ft-preview.dark::before { opacity: 0; }
+    .ft-preview.dark::after { opacity: 1; }
+    .ft-controls.collapsed ~ .ft-preview {
+      left: 0;
+    }
+
+    /* === SIDEBAR HEADER with collapse btn === */
+    .ft-header {
+      padding: 16px 12px 12px 20px;
+      border-bottom: 1px solid var(--ft-border);
+      flex-shrink: 0;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .ft-header-text h1 {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--ft-text);
+    }
+    .ft-header-text .ft-sub { font-size: 11px; color: var(--ft-text-dim); margin-top: 3px; }
+    .ft-collapse-btn {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      background: transparent; border: 1px solid transparent;
+      color: var(--ft-text-faint); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease; font-family: inherit;
+    }
+    .ft-collapse-btn:hover {
+      background: var(--ft-surface-2); border-color: var(--ft-border-strong); color: var(--ft-text);
+    }
+    .ft-collapse-btn svg { width: 16px; height: 16px; }
+
+    /* === RE-OPEN TAB (visible when collapsed) === */
+    .ft-expand-tab {
+      position: fixed; top: calc(var(--ft-nav-h) + 14px); left: 0; z-index: 10;
+      width: 24px; height: 40px;
+      background: var(--ft-surface); border: 1px solid var(--ft-border-strong);
+      border-left: none; border-radius: 0 8px 8px 0;
+      color: var(--ft-text-faint); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.06);
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--ft-duration) var(--ft-ease);
+    }
+    .ft-expand-tab svg { width: 14px; height: 14px; }
+    .ft-expand-tab:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-controls.collapsed ~ .ft-preview .ft-expand-tab,
+    .ft-controls.collapsed ~ .ft-expand-tab {
+      opacity: 1; pointer-events: auto;
+    }
+
+    .ft-toolbar {
+      display: flex; gap: 4px; padding: 10px 20px;
+      border-bottom: 1px solid var(--ft-border);
+      flex-wrap: wrap; flex-shrink: 0;
+    }
+    .ft-toolbar button {
+      padding: 5px 10px; font-size: 10px; font-family: inherit;
+      font-weight: 500; background: var(--ft-surface); color: var(--ft-text-dim);
+      border: 1px solid var(--ft-border-strong); border-radius: 6px;
+      cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+    }
+    .ft-toolbar button:hover { color: var(--ft-text); border-color: rgba(0,0,0,0.2); background: var(--ft-surface-2); }
+    .ft-controls-scroll { flex: 1; overflow-y: auto; padding: 14px 20px; }
+
+    /* === GROUPS === */
+    .ft-group { margin-bottom: 18px; }
+    .ft-group-title {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--ft-text-dim);
+      margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--ft-border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ft-group-title .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .ft-control { margin-bottom: 10px; }
+    .ft-control-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--ft-text); margin-bottom: 4px; font-weight: 500; user-select: none;
+    }
+    .ft-val {
+      color: var(--ft-accent); font-weight: 600; font-size: 11px;
+      font-variant-numeric: tabular-nums; min-width: 48px; text-align: right;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: none; border: 1px solid transparent; border-radius: 4px;
+      padding: 1px 4px; outline: none; cursor: text;
+      transition: border-color 0.15s ease;
+    }
+    .ft-val:hover { border-color: var(--ft-border-strong); }
+    .ft-val:focus { border-color: var(--ft-accent); background: var(--ft-surface-2); }
+    .ft-control-row { display: flex; align-items: center; gap: 8px; }
+
+    /* === INPUTS === */
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%;
+      height: 4px; border-radius: 2px; background: var(--ft-surface-3);
+      outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; cursor: grab;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.15);
+      transition: box-shadow 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15);
+    }
+    input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%; border: none;
+      background: #fff; cursor: grab;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.15);
+    }
+    input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ft-surface-3); border: none; }
+    input[type="color"] {
+      -webkit-appearance: none; appearance: none; border: 1px solid var(--ft-border-strong);
+      border-radius: 6px; width: 30px; height: 22px; cursor: pointer; background: transparent;
+      padding: 0; flex-shrink: 0;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+    input[type="color"]::-webkit-color-swatch { border-radius: 3px; border: none; }
+    input[type="text"] {
+      width: 100%; padding: 5px 10px; background: var(--ft-surface-2); color: var(--ft-text);
+      border: 1px solid var(--ft-border-strong); border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px; outline: none; transition: border-color 0.15s ease;
+    }
+    input[type="text"]:focus { border-color: var(--ft-accent); }
+    input[type="text"]::placeholder { color: var(--ft-text-faint); }
+
+    /* === OUTPUT === */
+    .ft-output {
+      border-top: 1px solid var(--ft-border); padding: 14px 20px; flex-shrink: 0;
+    }
+    .ft-output-hdr {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--ft-text-dim); margin-bottom: 6px;
+    }
+    .ft-output pre {
+      background: var(--ft-surface-2); border: 1px solid var(--ft-border);
+      border-radius: 8px; padding: 10px 12px; font-size: 10px;
+      line-height: 1.6; color: var(--ft-green); white-space: pre-wrap;
+      word-break: break-all; max-height: 100px; overflow-y: auto;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .ft-copy-all {
+      margin-top: 8px; width: 100%; padding: 10px 14px;
+      background: var(--ft-accent); color: #fff;
+      border: none; border-radius: 6px;
+      font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .ft-copy-all:hover { background: var(--ft-accent-hover); }
+    .ft-copy-all:active { transform: scale(0.98); }
+    .ft-copy-all.copied { background: var(--ft-green); }
+
+    /* === PREVIEW === */
+    .ft-preview { cursor: grab; touch-action: none; }
+    .ft-preview:active { cursor: grabbing; }
+    .ft-canvas {
+      position: absolute; top: 50%; left: 50%;
+      transform-origin: 0 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .ft-canvas > * { pointer-events: auto; }
+    .ft-preview-badge {
+      position: absolute; top: 14px; right: 16px; font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--ft-text-faint); user-select: none; pointer-events: none; font-weight: 600;
+      z-index: 1; transition: color 0.4s ease;
+    }
+    .ft-preview.dark .ft-preview-badge { color: #666; }
+
+    /* === ZOOM === */
+    .ft-zoom-controls {
+      position: absolute; bottom: 12px; left: 14px;
+      display: flex; gap: 1px; z-index: 10;
+      background: var(--ft-surface); border-radius: 6px;
+      box-shadow: 0 0 0 1px var(--ft-border-strong), 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .ft-zoom-btn {
+      width: 28px; height: 28px; background: var(--ft-surface); border: none;
+      color: var(--ft-text-dim); font-size: 14px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.4s ease; font-family: inherit; line-height: 1;
+    }
+    .ft-zoom-btn:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-zoom-label {
+      height: 28px; padding: 0 8px; background: var(--ft-surface);
+      color: var(--ft-text-dim); font-size: 10px; font-weight: 600;
+      display: flex; align-items: center;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      border-left: 1px solid var(--ft-border); border-right: 1px solid var(--ft-border);
+      transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+    /* Reset view button */
+    .ft-reset-btn {
+      position: absolute; bottom: 12px; right: 14px; z-index: 10;
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--ft-surface); border: none;
+      box-shadow: 0 0 0 1px var(--ft-border-strong), 0 1px 3px rgba(0,0,0,0.08);
+      color: var(--ft-text-dim); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s, box-shadow 0.4s ease;
+    }
+    .ft-reset-btn:hover { background: var(--ft-surface-2); color: var(--ft-text); }
+    .ft-reset-btn svg { width: 14px; height: 14px; }
+    /* Dark mode zoom HUD */
+    .ft-preview.dark .ft-zoom-controls { background: #2a2a2a; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.3); }
+    .ft-preview.dark .ft-zoom-btn { background: #2a2a2a; color: #999; }
+    .ft-preview.dark .ft-zoom-btn:hover { background: #3a3a3a; color: #fff; }
+    .ft-preview.dark .ft-zoom-label { background: #2a2a2a; color: #999; border-color: rgba(255,255,255,0.08); }
+    .ft-preview.dark .ft-reset-btn { background: #2a2a2a; color: #999; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.3); }
+    .ft-preview.dark .ft-reset-btn:hover { background: #3a3a3a; color: #fff; }
+
+    @media (max-width: 800px) {
+      .ft-controls { width: 100%; height: 55vh; top: auto; bottom: 0;
+        transform: translateY(0); border-right: none; border-top: 1px solid var(--ft-border); }
+      .ft-controls.collapsed { transform: translateY(100%); }
+      .ft-preview { left: 0; bottom: 55vh; transition: bottom var(--ft-duration) var(--ft-ease); }
+      .ft-controls.collapsed ~ .ft-preview { bottom: 0; }
+      .ft-expand-tab { top: auto; bottom: 14px; left: 50%; transform: translateX(-50%);
+        width: 40px; height: 24px; border-radius: 8px 8px 0 0; border: 1px solid var(--ft-border-strong);
+        border-bottom: none; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+    }
+
+    /* === THE ELEMENT: Dashboard Analytics Card === */
+    .el-card {
+      width: 380px; font-family: 'Inter', sans-serif; position: relative; z-index: 1;
+      background: #fff; transition: all 0.08s linear;
+    }
+    .el-card .card-header {
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;
+    }
+    .el-card .card-label { font-size: 13px; font-weight: 500; color: #6b6b6b; margin-bottom: 4px; }
+    .el-card .card-value { font-size: 36px; font-weight: 800; color: #1e1e1e; line-height: 1.1; }
+    .el-card .card-change {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
+      font-size: 12px; font-weight: 600; border-radius: 6px;
+      background: rgba(24,121,78,0.08); color: #18794e;
+    }
+    .el-card .card-change::before { content: '\2191'; }
+    .el-card .chart { display: flex; align-items: flex-end; gap: 4px; height: 64px; margin-bottom: 16px; }
+    .el-card .chart .bar {
+      flex: 1; border-radius: 3px 3px 0 0; transition: background 0.08s; min-width: 0;
+    }
+    .el-card .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .el-card .card-footer span { font-size: 12px; color: #999; }
+    .el-card .card-footer .dot-row { display: flex; gap: 6px; }
+    .el-card .card-footer .dot-row span { width: 8px; height: 8px; border-radius: 50%; }
+    /* === IFRAME EMBED === */
+    .ft-embedded .ft-nav { display: none; }
+    .ft-embedded .ft-preview { top: 0; }
+    .ft-embedded .ft-controls { top: 0; }
+
+    /* === NAV === */
+    .ft-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: var(--ft-nav-h); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(250,250,250,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+    }
+    .ft-nav-logo {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; color: var(--ft-text);
+      text-decoration: none; letter-spacing: -0.3px;
+    }
+    .ft-nav-mark {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--ft-accent); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ft-nav-mark svg { width: 14px; height: 14px; }
+    .ft-nav-logo { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; font-weight: 700; letter-spacing: -0.2px; }
+    .ft-nav-links { display: flex; align-items: center; gap: 2px; }
+    .ft-nav-link {
+      padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      color: var(--ft-text-dim); text-decoration: none; transition: color 0.15s, background 0.15s;
+    }
+    .ft-nav-link:hover { color: var(--ft-text); background: var(--ft-surface-2); }
+    .ft-nav-link.active { color: var(--ft-accent); }
+    .ft-nav-gh {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      color: var(--ft-text); text-decoration: none;
+      border: 1px solid var(--ft-border-strong); transition: border-color 0.15s;
+    }
+    .ft-nav-gh:hover { border-color: var(--ft-text); }
+    .ft-nav-gh svg { width: 14px; height: 14px; }
+  </style>
+</head>
+<body>
+  <div class="ft-controls" id="ft-controls">
+    <div class="ft-header">
+      <div class="ft-header-text">
+        <h1>Dashboard Card</h1>
+        <div class="ft-sub">AnalyticsCard component</div>
+      </div>
+      <button class="ft-collapse-btn" onclick="togglePanel()" title="Collapse sidebar">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="1" width="14" height="14" rx="2"/>
+          <line x1="6" y1="1" x2="6" y2="15"/>
+          <polyline points="10,6 8,8 10,10"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ft-toolbar">
+      <button onclick="setValues({sx:0,sy:8,sblur:32,sspread:-4,scolor:'#000000',sopacity:8,radius:16,bw:1,bcolor:'#000000',bopacity:6,bg:'#ffffff',accent:'#6366f1',padding:28})">Original</button>
+      <button onclick="setValues({sx:0,sy:2,sblur:8,sspread:0,scolor:'#000000',sopacity:4,radius:10,bw:1,bcolor:'#000000',bopacity:4,bg:'#ffffff',accent:'#3b82f6',padding:24})">Subtle</button>
+      <button onclick="setValues({sx:0,sy:20,sblur:60,sspread:-8,scolor:'#000000',sopacity:12,radius:24,bw:1,bcolor:'#000000',bopacity:3,bg:'#ffffff',accent:'#8b5cf6',padding:32})">Elevated</button>
+      <button onclick="setValues({sx:0,sy:0,sblur:0,sspread:0,scolor:'#000000',sopacity:0,radius:0,bw:1,bcolor:'#000000',bopacity:10,bg:'#ffffff',accent:'#ef4444',padding:28})">Sharp</button>
+      <button onclick="setValues({sx:0,sy:12,sblur:48,sspread:-4,scolor:'#000000',sopacity:15,radius:20,bw:0,bcolor:'#000000',bopacity:0,bg:'#ffffff',accent:'#14b8a6',padding:28})">Float</button>
+      <button onclick="toggleBg()" id="ft-bg-toggle" title="Toggle light/dark preview" style="display:inline-flex;align-items:center;gap:4px;"><svg id="ft-bg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><span id="ft-bg-label">Light</span></button>
+    </div>
+    <div class="ft-controls-scroll">
+      <div class="ft-group">
+        <div class="ft-group-title"><span class="dot" style="background:#6366f1"></span> Shadow</div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Offset X</span><input class="ft-val" id="v-sx" value="7px" onchange="valInput('sx',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="sx" min="-20" max="20" step="1" value="7" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Offset Y</span><input class="ft-val" id="v-sy" value="6px" onchange="valInput('sy',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="sy" min="-20" max="40" step="1" value="6" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Blur</span><input class="ft-val" id="v-sblur" value="0px" onchange="valInput('sblur',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="sblur" min="0" max="80" step="1" value="0" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Spread</span><input class="ft-val" id="v-sspread" value="3px" onchange="valInput('sspread',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="sspread" min="-20" max="20" step="1" value="3" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Opacity</span><input class="ft-val" id="v-sc" value="40%" onchange="valInput('sopacity',this)" onclick="this.select()"></div>
+          <div class="ft-control-row">
+            <input type="color" id="scolor" value="#000000" oninput="update()">
+            <input type="range" id="sopacity" min="0" max="40" step="1" value="40" oninput="update()">
+          </div>
+        </div>
+      </div>
+      <div class="ft-group">
+        <div class="ft-group-title"><span class="dot" style="background:#0c8ce9"></span> Shape</div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Border Radius</span><input class="ft-val" id="v-radius" value="24px" onchange="valInput('radius',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="radius" min="0" max="36" step="1" value="24" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Border</span><input class="ft-val" id="v-bw" value="1px 6%" style="min-width:56px;" readonly></div>
+          <div class="ft-control-row">
+            <input type="range" id="bw" min="0" max="3" step="0.5" value="1" oninput="update()" style="flex:0.4;">
+            <input type="color" id="bcolor" value="#000000" oninput="update()">
+            <input type="range" id="bopacity" min="0" max="40" step="1" value="6" oninput="update()" style="flex:0.6;">
+          </div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Padding</span><input class="ft-val" id="v-padding" value="32px" onchange="valInput('padding',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="range" id="padding" min="16" max="40" step="2" value="32" oninput="update()"></div>
+        </div>
+      </div>
+      <div class="ft-group">
+        <div class="ft-group-title"><span class="dot" style="background:#18794e"></span> Color</div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Background</span><input class="ft-val" id="v-bg" value="#ffffff" onchange="valInput('bg',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="color" id="bg" value="#ffffff" oninput="update()"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Accent</span><input class="ft-val" id="v-accent" value="#8b5cf6" onchange="valInput('accent',this)" onclick="this.select()"></div>
+          <div class="ft-control-row"><input type="color" id="accent" value="#8b5cf6" oninput="update()"></div>
+        </div>
+      </div>
+      <div class="ft-group">
+        <div class="ft-group-title"><span class="dot" style="background:#999"></span> Preview Content</div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Card Label</span><span class="ft-val" id="v-label" style="font-size:9px;min-width:auto;">preview only</span></div>
+          <div class="ft-control-row"><input type="text" id="card-label" value="Monthly Revenue" placeholder="e.g. Monthly Revenue, Total Users" oninput="update()" aria-label="Card label"></div>
+        </div>
+        <div class="ft-control">
+          <div class="ft-control-label"><span>Card Value</span><span class="ft-val" id="v-value" style="font-size:9px;min-width:auto;">preview only</span></div>
+          <div class="ft-control-row"><input type="text" id="card-value" value="$48,260" placeholder="e.g. $48,260, 12,847" oninput="update()" aria-label="Card value"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ft-output">
+      <div class="ft-output-hdr">Output</div>
+      <pre id="ft-code">/* tune the values above */</pre>
+      <button class="ft-copy-all" id="ft-copy-btn" onclick="copyAll()">Copy to Clipboard</button>
+    </div>
+  </div>
+  <button class="ft-expand-tab" id="ft-expand-tab" onclick="togglePanel()" title="Show controls">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="1" y="1" width="14" height="14" rx="2"/>
+      <line x1="6" y1="1" x2="6" y2="15"/>
+      <polyline points="8,6 10,8 8,10"/>
+    </svg>
+  </button>
+  <nav class="ft-nav">
+    <a href="index.html" class="ft-nav-logo"><span class="ft-nav-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><circle cx="4" cy="12" r="2" fill="#fff"/><circle cx="12" cy="10" r="2" fill="#fff"/><circle cx="20" cy="14" r="2" fill="#fff"/></svg></span> AI Fine-Tuner</a>
+    <div class="ft-nav-links">
+      <a href="single-button-glow.html" class="ft-nav-link">Single</a>
+      <a href="small-pricing-card.html" class="ft-nav-link">Small</a>
+      <a href="full-dashboard-card.html" class="ft-nav-link active">Full</a>
+      <a href="https://github.com/muhamadjawdatsalemalakoum/aifinetuner" class="ft-nav-gh" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> GitHub</a>
+    </div>
+  </nav>
+  <div class="ft-preview" id="ft-preview">
+    <span class="ft-preview-badge">preview</span>
+    <div class="ft-zoom-controls">
+      <button class="ft-zoom-btn" onclick="zoomBtn(-1)" title="Zoom out">−</button>
+      <span class="ft-zoom-label" id="ft-zoom-val">100%</span>
+      <button class="ft-zoom-btn" onclick="zoomBtn(1)" title="Zoom in">+</button>
+    </div>
+    <button class="ft-reset-btn" onclick="centerCanvas(true)" title="Reset view">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><line x1="8" y1="1" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="15"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="15" y2="8"/></svg>
+    </button>
+    <div class="ft-canvas" id="ft-canvas">
+      <div class="el-card" id="el" style="padding:28px; border-radius:16px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 8px 32px -4px rgba(0,0,0,0.08);">
+        <div class="card-header">
+          <div>
+            <div class="card-label">Monthly Revenue</div>
+            <div class="card-value">$48,260</div>
+          </div>
+          <div class="card-change">12.5%</div>
+        </div>
+        <div class="chart" id="chart"></div>
+        <div class="card-footer">
+          <span>Last 12 months</span>
+          <div class="dot-row">
+            <span style="background:#6366f1"></span>
+            <span style="background:#18794e"></span>
+            <span style="background:#ccc"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    if(window.self!==window.top)document.body.classList.add('ft-embedded');
+    const heights=[35,45,30,55,48,62,40,72,58,80,68,90];
+    const chartEl=document.getElementById('chart');
+    heights.forEach((h,i)=>{
+      const bar=document.createElement('div');
+      bar.className='bar';
+      bar.style.height=h+'%';
+      bar.style.background=i>=heights.length-2?'#6366f1':'rgba(99,102,241,0.18)';
+      chartEl.appendChild(bar);
+    });
+
+    function updateTrack(input) {
+      const pct = (input.value - input.min) / (input.max - input.min) * 100;
+      input.style.background = 'linear-gradient(90deg, #0c8ce9 0%, #0c8ce9 ' + pct + '%, #e0e0e0 ' + pct + '%, #e0e0e0 100%)';
+    }
+    function updateAllTracks() {
+      document.querySelectorAll('input[type="range"]').forEach(updateTrack);
+    }
+    function hexToRgb(h){return{r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)};}
+    function update(){
+      const el=document.getElementById('el');
+      const sx=+document.getElementById('sx').value;
+      const sy=+document.getElementById('sy').value;
+      const sb=+document.getElementById('sblur').value;
+      const ss=+document.getElementById('sspread').value;
+      const sc=hexToRgb(document.getElementById('scolor').value);
+      const so=+document.getElementById('sopacity').value;
+      const r=+document.getElementById('radius').value;
+      const bw=+document.getElementById('bw').value;
+      const bcol=hexToRgb(document.getElementById('bcolor').value);
+      const bo=+document.getElementById('bopacity').value;
+      const p=+document.getElementById('padding').value;
+      const bg=document.getElementById('bg').value;
+      const ac=document.getElementById('accent').value;
+
+      el.querySelector('.card-label').textContent=document.getElementById('card-label').value||'Monthly Revenue';
+      el.querySelector('.card-value').textContent=document.getElementById('card-value').value||'$48,260';
+
+      el.style.boxShadow=sx+'px '+sy+'px '+sb+'px '+ss+'px rgba('+sc.r+','+sc.g+','+sc.b+','+(so/100).toFixed(2)+')';
+      el.style.borderRadius=r+'px';
+      el.style.border=bw+'px solid rgba('+bcol.r+','+bcol.g+','+bcol.b+','+(bo/100).toFixed(2)+')';
+      el.style.padding=p+'px';
+      el.style.background=bg;
+
+      document.querySelectorAll('.bar').forEach((b,i)=>{
+        b.style.background=i>=heights.length-2?ac:'rgba('+hexToRgb(ac).r+','+hexToRgb(ac).g+','+hexToRgb(ac).b+',0.18)';
+      });
+      document.querySelector('.dot-row span:first-child').style.background=ac;
+
+      document.getElementById('v-sx').value=sx+'px';
+      document.getElementById('v-sy').value=sy+'px';
+      document.getElementById('v-sblur').value=sb+'px';
+      document.getElementById('v-sspread').value=ss+'px';
+      document.getElementById('v-sc').value=so+'%';
+      document.getElementById('v-radius').value=r+'px';
+      document.getElementById('v-bw').value=bw+'px '+bo+'%';
+      document.getElementById('v-padding').value=p+'px';
+      document.getElementById('v-bg').value=bg;
+      document.getElementById('v-accent').value=ac;
+
+      document.getElementById('ft-code').textContent=
+        'border-radius: '+r+'px;\n'+
+        'padding: '+p+'px;\n'+
+        'background: '+bg+';\n'+
+        'border: '+bw+'px solid rgba('+bcol.r+','+bcol.g+','+bcol.b+','+(bo/100).toFixed(2)+');\n'+
+        'box-shadow: '+sx+'px '+sy+'px '+sb+'px '+ss+'px\n'+
+        '           rgba('+sc.r+','+sc.g+','+sc.b+','+(so/100).toFixed(2)+');\n'+
+        '/* accent: '+ac+' */';
+      updateAllTracks();
+    }
+    function copyAll(){
+      navigator.clipboard.writeText('/* Fine-Tuned: dashboard-card-style | src/components/AnalyticsCard.tsx */\n\n'+document.getElementById('ft-code').textContent).then(()=>{
+        const b=document.getElementById('ft-copy-btn');
+        b.textContent='\u2713 Copied!';b.classList.add('copied');
+        setTimeout(()=>{b.textContent='Copy to Clipboard';b.classList.remove('copied');},2000);
+      });
+    }
+    function setValues(v){Object.entries(v).forEach(([id,val])=>{const e=document.getElementById(id);if(!e)return;e.value=val;});update();}
+    function toggleBg(){
+      var p=document.getElementById('ft-preview');p.classList.toggle('dark');
+      var icon=document.getElementById('ft-bg-icon');
+      var isDark=p.classList.contains('dark');
+      document.getElementById('ft-bg-label').textContent=isDark?'Dark':'Light';
+      while(icon.firstChild)icon.removeChild(icon.firstChild);
+      if(isDark){
+        var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d','M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z');
+        icon.appendChild(path);
+      } else {
+        var c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx','12');c.setAttribute('cy','12');c.setAttribute('r','5');icon.appendChild(c);
+        [[12,1,12,3],[12,21,12,23],[4.22,4.22,5.64,5.64],[18.36,18.36,19.78,19.78],[1,12,3,12],[21,12,23,12],[4.22,19.78,5.64,18.36],[18.36,5.64,19.78,4.22]].forEach(function(l){
+          var ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+          ln.setAttribute('x1',l[0]);ln.setAttribute('y1',l[1]);ln.setAttribute('x2',l[2]);ln.setAttribute('y2',l[3]);icon.appendChild(ln);
+        });
+      }
+    }
+    function togglePanel(){document.getElementById('ft-controls').classList.toggle('collapsed');}
+
+    // Manual value input
+    function valInput(sliderId, input) {
+      const slider = document.getElementById(sliderId);
+      if (!slider) return;
+      if (slider.type === 'color') { slider.value = input.value; }
+      else { const num = parseFloat(input.value); if (!isNaN(num)) slider.value = Math.max(+slider.min, Math.min(+slider.max, num)); }
+      update();
+    }
+
+    /* === Trackpad pan & pinch-zoom === */
+    let panX=0, panY=0, zoom=1;
+    const canvas=document.getElementById('ft-canvas');
+    const previewEl=document.getElementById('ft-preview');
+    function applyTransform(){
+      canvas.style.transform='translate('+panX+'px,'+panY+'px) scale('+zoom+')';
+      document.getElementById('ft-zoom-val').textContent=Math.round(zoom*100)+'%';
+    }
+    /* Wheel events already reflect OS scroll-direction settings (natural/inverted).
+       deltaY>0 always means "scroll content down", regardless of OS preference. */
+    previewEl.addEventListener('wheel',function(e){
+      e.preventDefault();
+      if(e.ctrlKey||e.metaKey){
+        /* Pinch-to-zoom — multiplicative scaling for consistent feel */
+        var factor=Math.pow(0.998,e.deltaY);
+        var nz=Math.min(4,Math.max(0.25,zoom*factor));
+        var rect=previewEl.getBoundingClientRect();
+        var cx=e.clientX-rect.left-rect.width/2, cy=e.clientY-rect.top-rect.height/2;
+        var ratio=nz/zoom;
+        panX=cx-ratio*(cx-panX); panY=cy-ratio*(cy-panY); zoom=nz;
+      } else {
+        /* Two-finger pan — follows native scroll direction */
+        panX-=e.deltaX; panY-=e.deltaY;
+      }
+      applyTransform();
+    },{passive:false});
+    /* === Mouse drag to pan === */
+    let dragging=false, dragX=0, dragY=0;
+    previewEl.addEventListener('pointerdown',function(e){
+      if(e.button!==0||e.target.closest('.ft-zoom-controls,.ft-reset-btn,.ft-canvas *'))return;
+      dragging=true; dragX=e.clientX; dragY=e.clientY;
+      previewEl.setPointerCapture(e.pointerId);
+    });
+    previewEl.addEventListener('pointermove',function(e){
+      if(!dragging)return;
+      panX+=e.clientX-dragX; panY+=e.clientY-dragY;
+      dragX=e.clientX; dragY=e.clientY;
+      applyTransform();
+    });
+    previewEl.addEventListener('pointerup',function(e){ dragging=false; });
+    previewEl.addEventListener('pointercancel',function(e){ dragging=false; });
+
+    function zoomBtn(dir){
+      const nz=Math.min(4,Math.max(0.25,zoom+dir*0.1));
+      const cx=0, cy=0;
+      const ratio=nz/zoom;
+      panX=cx-ratio*(cx-panX); panY=cy-ratio*(cy-panY); zoom=nz;
+      applyTransform();
+    }
+    function centerCanvas(animate){
+      var child=canvas.firstElementChild;
+      var tX,tY,tZ=1;
+      if(child){var r=child.getBoundingClientRect();var s=zoom;tX=-((r.width/s)/2);tY=-((r.height/s)/2);}
+      else{tX=0;tY=0;}
+      if(!animate){panX=tX;panY=tY;zoom=tZ;applyTransform();return;}
+      var sX=panX,sY=panY,sZ=zoom,start=null,dur=400;
+      function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+      function step(ts){
+        if(!start)start=ts;var t=Math.min((ts-start)/dur,1),e=ease(t);
+        panX=sX+(tX-sX)*e;panY=sY+(tY-sY)*e;zoom=sZ+(tZ-sZ)*e;
+        applyTransform();if(t<1)requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    previewEl.addEventListener('dblclick',function(e){
+      if(e.target.closest('.ft-zoom-controls'))return;
+      centerCanvas(true);
+    });
+    update();
+    centerCanvas();
+  </script>
+</body>
+</html>

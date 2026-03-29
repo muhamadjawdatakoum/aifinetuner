@@ -1,0 +1,64 @@
+AI Fine-Tuner — Source Available License
+
+Copyright (c) 2026 Muhamad Jawdat Salem Alakoum. All rights reserved.
+
+PERMITTED USE
+
+You are granted a free, non-exclusive, non-transferable license to:
+
+  1. Use this software as an AI agent skill, plugin, or instruction set
+     (via AGENTS.md, SKILL.md, or plugin manifest) in its intended form —
+     through any AI coding agent, IDE extension, or automation tool.
+
+  2. Use this software for personal, educational, and internal business
+     purposes through the intended AI agent integration.
+
+  3. Install, configure, and distribute this software as a skill or plugin
+     within your organization or team, provided it remains in its original
+     form and this license is included.
+
+  4. Contribute improvements back to the original project via pull requests.
+
+PROHIBITED USE
+
+You may NOT, without prior written permission from the copyright holder:
+
+  1. Sell, sublicense, or commercially distribute this software or any
+     derivative work as a standalone product or service.
+
+  2. Fork, rebrand, or repackage this software (or substantial portions
+     of it) to create a competing product, service, or offering.
+
+  3. Remove or alter this license, copyright notices, or attribution.
+
+  4. Use the code, templates, or architecture as the basis for a
+     commercial product that replicates the core functionality of
+     AI Fine-Tuner.
+
+  5. Claim ownership or authorship of this software or its design.
+
+CLARIFICATIONS
+
+  - Using this software as a skill/plugin in a commercial project (e.g.,
+    a company using it to fine-tune their product's UI) is PERMITTED.
+    The restriction is on commercializing the tool itself, not the work
+    produced with it.
+
+  - AI agent platforms (Claude Code, Codex, Cursor, etc.) may index,
+    cache, and serve this software as part of their plugin/skill
+    ecosystem without additional permission.
+
+  - Contributions submitted to the project are licensed under the same
+    terms and become part of the original work.
+
+DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+For commercial licensing inquiries, contact the copyright holder.

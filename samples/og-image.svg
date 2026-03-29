@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fafafa"/>
+  <rect x="40" y="40" width="1120" height="550" rx="16" fill="#ffffff" stroke="#e4e4e7" stroke-width="1"/>
+  <!-- Logo mark — 48x48 at (80,80), center is (104,104) -->
+  <rect x="80" y="80" width="48" height="48" rx="12" fill="#0c8ce9"/>
+  <!-- Slider 1 at x=96, lines from y=90 to y=118, center y=104 -->
+  <line x1="96" y1="118" x2="96" y2="106" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="96" y1="101" x2="96" y2="90" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="96" cy="104" r="2.5" fill="#fff"/>
+  <!-- Slider 2 at x=104, dot lower -->
+  <line x1="104" y1="118" x2="104" y2="112" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="104" y1="107" x2="104" y2="90" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="104" cy="110" r="2.5" fill="#fff"/>
+  <!-- Slider 3 at x=112, dot higher -->
+  <line x1="112" y1="118" x2="112" y2="100" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="112" y1="95" x2="112" y2="90" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="112" cy="98" r="2.5" fill="#fff"/>
+  <!-- Title -->
+  <text x="140" y="115" font-family="monospace" font-size="24" font-weight="700" fill="#09090b">AI Fine-Tuner</text>
+  <!-- Headline -->
+  <text x="80" y="220" font-family="system-ui, sans-serif" font-size="56" font-weight="800" fill="#09090b">Stop iterating in chat.</text>
+  <text x="80" y="290" font-family="system-ui, sans-serif" font-size="56" font-weight="800" fill="#0c8ce9">Drag sliders instead.</text>
+  <!-- Subtitle -->
+  <text x="80" y="350" font-family="system-ui, sans-serif" font-size="22" fill="#71717a">Shadows, animations, colors, typography, transforms, easing curves</text>
+  <text x="80" y="380" font-family="system-ui, sans-serif" font-size="22" fill="#71717a">anything visual, with live preview. Any language, any stack.</text>
+  <!-- Platforms -->
+  <text x="80" y="460" font-family="monospace" font-size="14" fill="#a1a1aa" letter-spacing="2">WORKS WITH ANY AI CODING AGENT</text>
+  <text x="80" y="500" font-family="system-ui, sans-serif" font-size="18" fill="#71717a">Claude Code  ·  Codex  ·  Cursor  ·  Windsurf  ·  Cline  ·  Aider  ·  20+ more</text>
+  <!-- URL -->
+  <text x="80" y="560" font-family="monospace" font-size="16" fill="#0c8ce9">muhamadjawdatsalemalakoum.github.io/aifinetuner</text>
+</svg>

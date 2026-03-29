@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fine-Tuner — Interactive Parameter Tuning for AI Coding Agents</title>
+  <meta name="description" content="Stop iterating in chat. Get a single HTML page with sliders, a Figma-style infinite canvas, and your actual element updating live. Drag, decide, ship.">
+  <meta name="keywords" content="ai fine-tuner, visual tuning, css sliders, interactive preview, claude code, codex, cursor, tailwind, flutter, swiftui, react native">
+  <meta name="author" content="Muhamad Jawdat Salem Alakoum">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://muhamadjawdatsalemalakoum.github.io/aifinetuner/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AI Fine-Tuner — Interactive Parameter Tuning for AI Coding Agents">
+  <meta property="og:description" content="Stop iterating in chat. Get sliders, an infinite canvas, and your actual element updating live. Works with Claude Code, Codex, Cursor, and any agent.">
+  <meta property="og:url" content="https://muhamadjawdatsalemalakoum.github.io/aifinetuner/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI Fine-Tuner — Interactive Parameter Tuning for AI Coding Agents">
+  <meta name="twitter:description" content="Stop iterating in chat. Drag sliders on an infinite canvas, see your actual element update live, copy the values, done.">
+  <meta property="og:image" content="https://muhamadjawdatsalemalakoum.github.io/aifinetuner/og-image.svg">
+  <meta property="og:site_name" content="AI Fine-Tuner">
+  <meta name="twitter:image" content="https://muhamadjawdatsalemalakoum.github.io/aifinetuner/og-image.svg">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230c8ce9'/><line x1='10' y1='24' x2='10' y2='8' stroke='white' stroke-width='3' stroke-linecap='round'/><circle cx='10' cy='16' r='3' fill='white'/><line x1='22' y1='24' x2='22' y2='8' stroke='white' stroke-width='3' stroke-linecap='round'/><circle cx='22' cy='20' r='3' fill='white'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "AI Fine-Tuner",
+    "description": "Interactive parameter tuning plugin for AI coding agents. Generates bespoke HTML pages with sliders and live preview for shadows, animations, colors, typography, and any visual property.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "url": "https://muhamadjawdatsalemalakoum.github.io/aifinetuner/",
+    "author": { "@type": "Person", "name": "Muhamad Jawdat Salem Alakoum" }
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --surface-2: #f4f4f5;
+      --surface-3: #e4e4e7;
+      --border: rgba(0,0,0,0.06);
+      --border-strong: rgba(0,0,0,0.12);
+      --text: #09090b;
+      --text-dim: #71717a;
+      --text-faint: #a1a1aa;
+      --accent: #0c8ce9;
+      --accent-hover: #0a7ad4;
+      --accent-soft: rgba(12,140,233,0.07);
+      --green: #16a34a;
+      --green-soft: rgba(22,163,74,0.07);
+      --nav-h: 56px;
+      --radius: 10px;
+      --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 20px); }
+    body {
+      font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* === NAV === */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--nav-h); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(250,250,250,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-strong);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      color: var(--text); text-decoration: none; letter-spacing: -0.3px;
+    }
+    .nav-logo em { font-style: normal; }
+    .nav-logo-mark {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-logo-mark svg { width: 16px; height: 16px; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-link {
+      padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      color: var(--text-dim); text-decoration: none; transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--text); background: var(--surface-2); }
+    .nav-link.active { color: var(--accent); }
+    .nav-gh {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      color: var(--text); text-decoration: none;
+      border: 1px solid var(--border-strong); transition: border-color 0.15s;
+    }
+    .nav-gh:hover { border-color: var(--text); }
+    .nav-gh svg { width: 16px; height: 16px; }
+
+    /* === SECTIONS === */
+    section { width: 100%; max-width: 920px; margin: 0 auto; padding: 0 24px; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 12px; font-weight: 500;
+      color: var(--accent); margin-bottom: 14px; letter-spacing: -0.2px;
+    }
+    .section-label::before {
+      content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--accent);
+    }
+    .section-title {
+      font-size: 32px; font-weight: 700; letter-spacing: -0.8px;
+      margin-bottom: 12px; line-height: 1.15;
+    }
+    .section-desc {
+      font-size: 15px; color: var(--text-dim); line-height: 1.65; max-width: 520px;
+    }
+
+    /* === HERO === */
+    .hero {
+      padding-top: calc(var(--nav-h) + 80px); padding-bottom: 40px;
+      text-align: center; display: flex; flex-direction: column; align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      background: var(--surface); border: 1px solid var(--border-strong);
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--text-dim); margin-bottom: 28px; letter-spacing: -0.2px;
+    }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .hero h1 {
+      font-size: 52px; font-weight: 800; letter-spacing: -2px;
+      line-height: 1.05; margin-bottom: 20px; max-width: 680px;
+    }
+    .hero h1 .accent { color: var(--accent); }
+    .hero-sub {
+      font-size: 16px; color: var(--text-dim); line-height: 1.7;
+      max-width: 520px; margin-bottom: 32px;
+    }
+    .hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      color: #fff; background: var(--accent); text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      color: var(--text); background: var(--surface); text-decoration: none;
+      border: 1px solid var(--border-strong); transition: border-color 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--text); }
+    /* === LOGO CAROUSEL === */
+    .agents-label {
+      text-align: center; margin-top: 48px; margin-bottom: 0;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-faint);
+    }
+    .agents-carousel {
+      margin-top: 24px; margin-bottom: 0; position: relative; overflow: hidden;
+      margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%);
+      width: 100vw; padding: 40px 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+    .agents-track {
+      display: flex; gap: 80px; align-items: center; width: max-content;
+      animation: scroll-logos 40s linear infinite;
+    }
+    .agents-track:hover { animation-play-state: paused; }
+    @keyframes scroll-logos {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .agent-logo {
+      display: flex; align-items: center; gap: 14px;
+      flex-shrink: 0; opacity: 0.3; transition: opacity 0.3s ease;
+      white-space: nowrap; text-decoration: none;
+    }
+    .agent-logo:hover { opacity: 0.75; }
+    .agent-logo img {
+      width: 52px; height: 52px; object-fit: contain;
+      filter: grayscale(1); transition: filter 0.3s ease;
+    }
+    .agent-logo:hover img { filter: grayscale(0); }
+    .agent-logo span {
+      font-size: 22px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.3px; text-decoration: none;
+    }
+
+    /* === HOW IT WORKS === */
+    .how { padding-top: 48px; padding-bottom: 72px; }
+    .how-flow {
+      margin-top: 48px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      max-width: 640px; margin-left: auto; margin-right: auto;
+    }
+    .how-flow::before { display: none; }
+    .how-step-item {
+      padding: 0 32px; position: relative;
+    }
+    .how-step-item:not(:last-child)::after {
+      content: ''; position: absolute; right: 0; top: 8px; bottom: 8px;
+      width: 1px; background: var(--border-strong);
+    }
+    .how-step-num {
+      font-family: var(--mono); font-size: 48px; font-weight: 800;
+      line-height: 1; margin-bottom: 16px; letter-spacing: -2px;
+      color: var(--surface-3);
+    }
+    .how-step-title {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      margin-bottom: 8px; letter-spacing: -0.3px;
+    }
+    .how-step-desc {
+      font-size: 13px; color: var(--text-dim); line-height: 1.6;
+    }
+    .how-step-desc code {
+      padding: 2px 6px; border-radius: 4px; font-size: 11px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      font-family: var(--mono);
+    }
+    .how-step-tag {
+      display: inline-block; margin-top: 12px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .how-step-tag.you { color: var(--accent); background: var(--accent-soft); }
+    .how-step-tag.agent { color: var(--green); background: var(--green-soft); }
+    .how-confirm {
+      max-width: 560px; margin: 24px auto 32px;
+    }
+    .how-confirm-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 8px;
+    }
+    .how-confirm-code {
+      background: #0f0f0f; color: #d4d4d8; border-radius: var(--radius);
+      padding: 20px 24px; font-family: var(--mono); font-size: 12px;
+      line-height: 1.7; white-space: pre-wrap; overflow-x: auto;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .how-confirm-code strong { color: #60a5fa; font-weight: 600; }
+
+    .how-demo {
+      margin-top: 40px;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      background: var(--surface-2);
+    }
+    .how-demo iframe {
+      width: 100%; height: 80vh; border: none; display: block;
+    }
+    .how-demo-label {
+      padding: 10px 16px; font-size: 11px; font-weight: 600;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .how-demo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    @media (max-width: 700px) {
+      .how-flow { grid-template-columns: 1fr; gap: 32px; }
+      .how-step-item:not(:last-child)::after { display: none; }
+      .how-step-item { padding: 0; }
+      .how-demo iframe { height: 700px; }
+    }
+    /* hide old classes if any leak through */
+    .how-line, .how-dot, .how-connector, .how-who, .how-content { display: none; }
+
+    /* === TRIGGERS === */
+    .triggers { padding-top: 48px; padding-bottom: 72px; }
+    .triggers-list { max-width: 640px; margin: 0 auto; }
+    .trigger-item {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 20px 0; border-bottom: 1px solid var(--border);
+    }
+    .trigger-item:last-child { border-bottom: none; }
+    .trigger-num {
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      color: var(--accent); background: var(--accent-soft);
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 2px;
+    }
+    .trigger-body { flex: 1; }
+    .trigger-title {
+      font-size: 14px; font-weight: 700; color: var(--text);
+      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .trigger-desc {
+      font-size: 13px; color: var(--text-dim); line-height: 1.5;
+    }
+    .trigger-how {
+      font-family: var(--mono); font-size: 9px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      color: var(--text-faint); background: var(--surface-2);
+      display: inline-block; padding: 2px 6px; border-radius: 3px;
+    }
+
+    /* === DEMOS === */
+    .demos { padding-top: 48px; padding-bottom: 72px; }
+    .demos-header { text-align: center; margin-bottom: 36px; }
+    .demos-header .section-desc { margin: 0 auto; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px;
+    }
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border-strong);
+      overflow: hidden; text-decoration: none; color: inherit;
+      display: flex; flex-direction: column;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .card-preview {
+      height: 170px; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface-2);
+      background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .card-preview-label {
+      position: absolute; top: 8px; right: 8px;
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      color: var(--text-faint); text-transform: uppercase; letter-spacing: -0.2px;
+      background: var(--surface); padding: 2px 6px; border-radius: 3px;
+      border: 1px solid var(--border);
+    }
+    .mini-btn {
+      padding: 10px 28px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      color: #09090b; background: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12); cursor: default;
+      transition: box-shadow 0.3s;
+    }
+    .card:hover .mini-btn { box-shadow: 0 6px 28px rgba(0,0,0,0.18); }
+    .mini-card {
+      width: 150px; background: #fff; border-radius: 10px; padding: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center;
+      transition: box-shadow 0.3s;
+    }
+    .card:hover .mini-card { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .mini-card-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      background: #dbeafe; color: #2563eb; font-size: 10px; font-weight: 600; margin-bottom: 6px;
+    }
+    .mini-card-price { font-size: 20px; font-weight: 700; color: #09090b; }
+    .mini-card-period { font-size: 10px; color: #a1a1aa; }
+    .mini-dashboard {
+      width: 190px; background: #fff; border-radius: 10px; padding: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: box-shadow 0.3s;
+    }
+    .card:hover .mini-dashboard { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .mini-dashboard-label { font-size: 10px; color: #a1a1aa; margin-bottom: 3px; }
+    .mini-dashboard-value { font-size: 19px; font-weight: 700; color: #09090b; margin-bottom: 10px; }
+    .mini-bars { display: flex; gap: 3px; align-items: flex-end; height: 30px; }
+    .mini-bar { flex: 1; border-radius: 2px; background: #6366f1; }
+    .card-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; }
+    .card-tier {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--accent); letter-spacing: -0.2px; margin-bottom: 6px;
+    }
+    .card-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .card-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; flex: 1; }
+    .card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+    .card-tag {
+      padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+      font-family: var(--mono);
+      background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border);
+    }
+
+    /* === FEATURES === */
+    .features { padding-top: 48px; padding-bottom: 72px; }
+    .features-header { text-align: center; margin-bottom: 36px; }
+    .features-header .section-desc { margin: 0 auto; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px;
+    }
+    .feature {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border-strong); padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .feature:hover { border-color: var(--accent); }
+    .feature-icon {
+      font-family: var(--mono); font-size: 16px; font-weight: 600;
+      color: var(--accent); margin-bottom: 12px;
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--accent-soft);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feature-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.2px; }
+    .feature-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+    /* === FORMATS === */
+    .formats { padding-top: 48px; padding-bottom: 72px; }
+    .formats-header { text-align: center; margin-bottom: 36px; }
+    .formats-header .section-desc { margin: 0 auto; }
+    .formats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;
+    }
+    .format {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border-strong); padding: 16px; text-align: center;
+      transition: border-color 0.2s;
+    }
+    .format:hover { border-color: var(--accent); }
+    .format-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+    .format-example {
+      font-size: 10px; color: var(--text-faint); font-family: var(--mono);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* === TOKENS === */
+    .tokens { padding-top: 48px; padding-bottom: 72px; }
+    .tokens-header { text-align: center; margin-bottom: 36px; }
+    .tokens-header .section-desc { margin: 0 auto; }
+    .tokens-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .tokens-card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border-strong); padding: 24px;
+    }
+    .tokens-card-label {
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 16px;
+    }
+    .tokens-card-label.without { color: var(--text-faint); }
+    .tokens-card-label.with { color: var(--accent); }
+    .tokens-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; font-size: 12px; color: var(--text-dim);
+    }
+    .tokens-val { font-weight: 600; font-family: var(--mono); font-size: 11px; }
+    .tokens-total {
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .tokens-total .tokens-val { font-size: 14px; }
+    .tokens-saved {
+      text-align: center; margin-top: 20px;
+      font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent);
+    }
+
+    /* === INSTALL === */
+    /* === INTEGRATION DEPTH === */
+    .depth { padding-top: 48px; padding-bottom: 72px; }
+    .depth-table { overflow-x: auto; }
+    .depth-table table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border-strong); overflow: hidden;
+    }
+    .depth-table th {
+      text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim);
+      background: var(--surface-2); border-bottom: 1px solid var(--border-strong);
+    }
+    .depth-table td {
+      padding: 10px 16px; color: var(--text-dim); border-bottom: 1px solid var(--border);
+    }
+    .depth-table td:first-child { color: var(--text); font-weight: 500; }
+    .depth-table strong { color: var(--accent); }
+    .depth-table tr:last-child td { border-bottom: none; }
+    @media (max-width: 640px) {
+      .depth-table { font-size: 11px; }
+      .depth-table th, .depth-table td { padding: 8px 10px; }
+    }
+
+    .install { padding-top: 48px; padding-bottom: 72px; }
+    .install-header { text-align: center; margin-bottom: 36px; }
+    .install-header .section-desc { margin: 0 auto; }
+    .install-tabs { display: flex; gap: 4px; margin-bottom: 14px; justify-content: center; flex-wrap: wrap; }
+    .install-tab {
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      font-family: 'Sora', sans-serif;
+      background: none; border: 1px solid var(--border); color: var(--text-dim);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .install-tab:hover { border-color: var(--text); color: var(--text); }
+    .install-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+    .install-code {
+      background: #0f0f0f; border-radius: var(--radius); padding: 20px 24px;
+      font-family: var(--mono); font-size: 13px;
+      color: #e4e4e7; line-height: 1.8; overflow-x: auto;
+      max-width: 560px; margin: 0 auto;
+    }
+    .install-code .comment { color: #52525b; }
+    .install-code .cmd { color: #60a5fa; }
+    .install-panel { display: none; }
+    .install-panel.active { display: block; }
+
+    /* === FOOTER === */
+    .footer {
+      border-top: 1px solid var(--border-strong);
+      padding: 44px 24px; text-align: center;
+    }
+    .footer-name { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .footer-links { display: flex; gap: 16px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+    .footer-link { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+    .footer-copy { font-size: 11px; color: var(--text-faint); }
+
+    /* === ANIMATIONS === */
+    .reveal {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.06s; }
+    .reveal-delay-2 { transition-delay: 0.12s; }
+    .reveal-delay-3 { transition-delay: 0.18s; }
+
+    .hero > * {
+      opacity: 0; transform: translateY(12px);
+      animation: fadeIn 0.5s ease forwards;
+    }
+    .hero > *:nth-child(1) { animation-delay: 0.1s; }
+    .hero > *:nth-child(2) { animation-delay: 0.2s; }
+    .hero > *:nth-child(3) { animation-delay: 0.3s; }
+    .hero > *:nth-child(4) { animation-delay: 0.4s; }
+    .hero > *:nth-child(5) { animation-delay: 0.5s; }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 34px; letter-spacing: -1px; }
+      .hero-sub { font-size: 14px; }
+      .section-title { font-size: 26px; }
+      .tokens-compare { grid-template-columns: 1fr; }
+      .nav-link { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <span class="nav-logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><circle cx="4" cy="12" r="2" fill="#fff"/><circle cx="12" cy="10" r="2" fill="#fff"/><circle cx="20" cy="14" r="2" fill="#fff"/></svg></span>
+      AI Fine-Tuner
+    </a>
+    <div class="nav-links">
+      <a href="#demos" class="nav-link">Demos</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#install" class="nav-link">Install</a>
+      <a href="https://github.com/muhamadjawdatsalemalakoum/aifinetuner" class="nav-gh" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Open source plugin</div>
+    <h1>Stop iterating in chat.<br><span class="accent">Drag sliders instead.</span></h1>
+    <p class="hero-sub">Shadows, animations, colors, typography, transforms, easing curves — anything visual, with live preview. Every tuner is bespoke. The agent fills in the blanks, not the infrastructure.</p>
+    <div class="hero-ctas">
+      <a href="#demos" class="btn-primary">Try the Demos</a>
+      <a href="#install" class="btn-secondary">Quick Install</a>
+    </div>
+    <div class="agents-label">Works with any AI coding agent</div>
+    <div class="agents-carousel">
+      <div class="agents-track">
+        <a class="agent-logo" href="https://claude.ai/code" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/claude" alt="Claude">          <span>Claude Code</span></a>
+        <a class="agent-logo" href="https://platform.openai.com/docs/codex" target="_blank" rel="noopener"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/openai.svg" alt="OpenAI"><span>OpenAI Codex</span></a>
+        <a class="agent-logo" href="https://cursor.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/cursor" alt="Cursor">                <span>Cursor</span></a>
+        <a class="agent-logo" href="https://windsurf.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/windsurf" alt="Windsurf">            <span>Windsurf</span></a>
+        <a class="agent-logo" href="https://github.com/cline/cline" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/cline" alt="Cline">        <span>Cline</span></a>
+        <a class="agent-logo" href="https://aider.chat" target="_blank" rel="noopener">                                                                             <span>Aider</span></a>
+        <a class="agent-logo" href="https://github.com/features/copilot" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/githubcopilot" alt="Copilot"><span>Copilot</span></a>
+        <a class="agent-logo" href="https://bolt.new" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/stackblitz" alt="bolt.new">              <span>bolt.new</span></a>
+        <a class="agent-logo" href="https://lovable.dev" target="_blank" rel="noopener"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/lovable.svg" alt="Lovable"><span>Lovable</span></a>
+        <a class="agent-logo" href="https://replit.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/replit" alt="Replit">                   <span>Replit Agent</span></a>
+        <!-- duplicate for seamless loop -->
+        <a class="agent-logo" href="https://claude.ai/code" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/claude" alt="Claude">          <span>Claude Code</span></a>
+        <a class="agent-logo" href="https://platform.openai.com/docs/codex" target="_blank" rel="noopener"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/openai.svg" alt="OpenAI"><span>OpenAI Codex</span></a>
+        <a class="agent-logo" href="https://cursor.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/cursor" alt="Cursor">                <span>Cursor</span></a>
+        <a class="agent-logo" href="https://windsurf.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/windsurf" alt="Windsurf">            <span>Windsurf</span></a>
+        <a class="agent-logo" href="https://github.com/cline/cline" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/cline" alt="Cline">        <span>Cline</span></a>
+        <a class="agent-logo" href="https://aider.chat" target="_blank" rel="noopener">                                                                             <span>Aider</span></a>
+        <a class="agent-logo" href="https://github.com/features/copilot" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/githubcopilot" alt="Copilot"><span>Copilot</span></a>
+        <a class="agent-logo" href="https://bolt.new" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/stackblitz" alt="bolt.new">              <span>bolt.new</span></a>
+        <a class="agent-logo" href="https://lovable.dev" target="_blank" rel="noopener"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/lovable.svg" alt="Lovable"><span>Lovable</span></a>
+        <a class="agent-logo" href="https://replit.com" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/replit" alt="Replit">                   <span>Replit Agent</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how reveal" id="how">
+    <div class="section-label">How it works</div>
+    <div class="section-title">One round-trip instead of ten</div>
+    <div class="section-desc">Shadows, animations, transforms, colors, typography, easing curves — anything visual. The agent reads your source, reproduces your element, and gives you framework-ready output.</div>
+    <div class="how-flow">
+      <div class="how-step-item">
+        <div class="how-step-num">01</div>
+        <div class="how-step-title">You invoke the fine-tuner</div>
+        <div class="how-step-desc"><code>/ai-fine-tuner</code> in Claude Code, Cursor, or Cline. <code>$ai-fine-tuner</code> in Codex. <code>@ai-fine-tuner</code> in Windsurf.</div>
+        <span class="how-step-tag you">You</span>
+      </div>
+      <div class="how-step-item">
+        <div class="how-step-num">02</div>
+        <div class="how-step-title">Agent confirms first — always</div>
+        <div class="how-step-desc">The agent never generates without asking. Here's exactly what it says:</div>
+        <span class="how-step-tag agent">Agent</span>
+      </div>
+    </div>
+    <div class="how-confirm">
+      <div class="how-confirm-label">What the agent says before generating:</div>
+      <pre class="how-confirm-code">I'll generate an interactive fine-tuner for <strong>CardWidget</strong> with controls for:
+  - Shadow: offset-x, offset-y, blur, spread, opacity
+  - Shape: border-radius
+
+I'll read: <strong>src/components/Card.tsx</strong>
+Output format: <strong>CSS</strong>
+Template: <strong>small</strong> (3 controls)
+
+The editor interface is pre-built (infinite canvas, zoom, presets) —
+I only fill in your element and values. This costs some extra tokens
+for reading your source file and generating the HTML, but saves many
+rounds of back-and-forth. <strong>Proceed?</strong></pre>
+    </div>
+    <div class="how-flow">
+      <div class="how-step-item">
+        <div class="how-step-num">03</div>
+        <div class="how-step-title">You say yes — agent generates</div>
+        <div class="how-step-desc">Reads your source, fills in a pre-built template with your element and sliders, saves to <code>.fine-tune/</code>, and opens it in your browser.</div>
+        <span class="how-step-tag agent">Agent</span>
+      </div>
+      <div class="how-step-item">
+        <div class="how-step-num">04</div>
+        <div class="how-step-title">Drag, copy, done</div>
+        <div class="how-step-desc">Adjust sliders on the infinite canvas, click <strong>Copy to Clipboard</strong>, paste back. The agent applies it to your code.</div>
+        <span class="how-step-tag you">You</span>
+      </div>
+    </div>
+    <div class="how-demo">
+      <div class="how-demo-label"><span class="how-demo-dot"></span> Live animation demo — drag the sliders</div>
+      <iframe src="full-animation-preview.html" loading="lazy" title="AI Fine-Tuner animation demo"></iframe>
+    </div>
+  </section>
+
+  <!-- WHEN IT TRIGGERS -->
+  <section class="triggers reveal">
+    <div style="text-align:center;margin-bottom:36px;">
+      <div class="section-label">When it triggers</div>
+      <div class="section-title">Four ways it activates</div>
+      <p class="section-desc" style="margin:0 auto;">Explicit invocation is the most reliable trigger. The syntax varies by platform — <code>/</code>, <code>$</code>, or <code>@</code> followed by <code>ai-fine-tuner</code>.</p>
+    </div>
+    <div class="triggers-list">
+      <div class="trigger-item reveal">
+        <div class="trigger-num">1</div>
+        <div class="trigger-body">
+          <div class="trigger-title">You invoke it <span class="trigger-how">Explicit</span></div>
+          <div class="trigger-desc"><code>/ai-fine-tuner</code> in Claude Code, Cursor, Cline. <code>$ai-fine-tuner</code> in Codex. <code>@ai-fine-tuner</code> in Windsurf. For Aider: <code>/read AGENTS.md</code> then ask to fine-tune.</div>
+        </div>
+      </div>
+      <div class="trigger-item reveal">
+        <div class="trigger-num">2</div>
+        <div class="trigger-body">
+          <div class="trigger-title">Iteration detected <span class="trigger-how">Instruction</span></div>
+          <div class="trigger-desc">You've gone back and forth on visual values 2+ times. The agent recognizes the pattern and suggests the tuner instead of continuing to guess.</div>
+        </div>
+      </div>
+      <div class="trigger-item reveal">
+        <div class="trigger-num">3</div>
+        <div class="trigger-body">
+          <div class="trigger-title">Vague visual feedback <span class="trigger-how">Instruction</span></div>
+          <div class="trigger-desc">"Make it look better", "the spacing feels off", "it needs more pop" — subjective requests that would lead to guessing. The agent suggests the tuner instead.</div>
+        </div>
+      </div>
+      <div class="trigger-item reveal">
+        <div class="trigger-num">4</div>
+        <div class="trigger-body">
+          <div class="trigger-title">Agent's visual voice <span class="trigger-how">Instruction</span></div>
+          <div class="trigger-desc">The agent wants to show visual options — shadow depths, color variations, spacing — instead of describing them in text. It uses the tuner to show rather than tell.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMOS -->
+  <section class="demos reveal" id="demos">
+    <div class="demos-header">
+      <div class="section-label">Live demos</div>
+      <div class="section-title">Try it yourself</div>
+      <p class="section-desc">Three working demos showing different template tiers. Build new components or refine existing ones with the infinite canvas, trackpad zoom/pan, and live preview.</p>
+    </div>
+    <div class="grid">
+      <a href="single-button-glow.html" class="card reveal reveal-delay-1">
+        <div class="card-preview">
+          <div class="card-preview-label">single.html</div>
+          <button class="mini-btn">Launch Project</button>
+        </div>
+        <div class="card-body">
+          <div class="card-tier">1 slider</div>
+          <div class="card-title">Button Shadow</div>
+          <div class="card-desc">One slider controlling shadow depth on a clean button. Four presets from flat to deep.</div>
+          <div class="card-meta">
+            <span class="card-tag">1 control</span>
+            <span class="card-tag">4 presets</span>
+            <span class="card-tag">bottom bar</span>
+          </div>
+        </div>
+      </a>
+      <a href="small-pricing-card.html" class="card reveal reveal-delay-2">
+        <div class="card-preview">
+          <div class="card-preview-label">small.html</div>
+          <div class="mini-card">
+            <div class="mini-card-badge">Pro</div>
+            <div class="mini-card-price">$29</div>
+            <div class="mini-card-period">/month</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-tier">2–4 sliders</div>
+          <div class="card-title">Pricing Card</div>
+          <div class="card-desc">Three sliders for border radius, shadow blur, and accent color. Multi-property live updates.</div>
+          <div class="card-meta">
+            <span class="card-tag">3 controls</span>
+            <span class="card-tag">5 presets</span>
+            <span class="card-tag">bottom panel</span>
+          </div>
+        </div>
+      </a>
+      <a href="full-dashboard-card.html" class="card reveal reveal-delay-3">
+        <div class="card-preview">
+          <div class="card-preview-label">full.html</div>
+          <div class="mini-dashboard">
+            <div class="mini-dashboard-label">Revenue</div>
+            <div class="mini-dashboard-value">$48.2K</div>
+            <div class="mini-bars">
+              <div class="mini-bar" style="height:60%"></div>
+              <div class="mini-bar" style="height:80%"></div>
+              <div class="mini-bar" style="height:45%"></div>
+              <div class="mini-bar" style="height:90%"></div>
+              <div class="mini-bar" style="height:70%"></div>
+              <div class="mini-bar" style="height:55%"></div>
+              <div class="mini-bar" style="height:85%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-tier">5+ sliders</div>
+          <div class="card-title">Dashboard Card</div>
+          <div class="card-desc">Twelve sliders across shadow, shape, and color groups. Live bar chart recolors with the accent slider.</div>
+          <div class="card-meta">
+            <span class="card-tag">12 controls</span>
+            <span class="card-tag">5 presets</span>
+            <span class="card-tag">sidebar</span>
+          </div>
+        </div>
+      </a>
+      <a href="full-animation-preview.html" class="card reveal reveal-delay-1">
+        <div class="card-preview" style="background:#1a1a2e;">
+          <div class="card-preview-label" style="color:#666;">full.html</div>
+          <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 3s ease-in-out infinite;">Hello World</div>
+          <style>@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}</style>
+        </div>
+        <div class="card-body">
+          <div class="card-tier">animation</div>
+          <div class="card-title">Animation Preview</div>
+          <div class="card-desc">Live keyframe animation with float, glow-pulse, and orbiting effects. Drag sliders to control timing, intensity, and colors in real-time.</div>
+          <div class="card-meta">
+            <span class="card-tag">8 controls</span>
+            <span class="card-tag">3 presets</span>
+            <span class="card-tag">sidebar</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features reveal" id="features">
+    <div class="features-header">
+      <div class="section-label">Built-in features</div>
+      <div class="section-title">Bespoke UI, every time</div>
+      <p class="section-desc">The canvas, zoom, sliders, and controls are pre-built and production-grade. The agent only fills in your element and values — it never builds the interface itself. Fast, reliable, and consistent.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature reveal reveal-delay-1">
+        <div class="feature-icon">&#8734;</div>
+        <div class="feature-title">Infinite Canvas</div>
+        <div class="feature-desc">Figma-style preview with trackpad pinch-to-zoom (25%-400%) and two-finger pan.</div>
+      </div>
+      <div class="feature reveal reveal-delay-1">
+        <div class="feature-icon">%</div>
+        <div class="feature-title">Zoom HUD</div>
+        <div class="feature-desc">Bottom-left zoom display with +/- buttons. Double-click to reset to 100%.</div>
+      </div>
+      <div class="feature reveal reveal-delay-2">
+        <div class="feature-icon">#</div>
+        <div class="feature-title">Editable Values</div>
+        <div class="feature-desc">Click any readout to type an exact value. Hit Enter to apply instantly.</div>
+      </div>
+      <div class="feature reveal reveal-delay-2">
+        <div class="feature-icon">&#9681;</div>
+        <div class="feature-title">Dark / Light Toggle</div>
+        <div class="feature-desc">Switch canvas background to test contrast in both contexts.</div>
+      </div>
+      <div class="feature reveal reveal-delay-3">
+        <div class="feature-icon">&#9655;</div>
+        <div class="feature-title">Collapsible Controls</div>
+        <div class="feature-desc">GPU-accelerated collapse. One click for full-screen canvas.</div>
+      </div>
+      <div class="feature reveal reveal-delay-3">
+        <div class="feature-icon">&#9654;</div>
+        <div class="feature-title">Preset Buttons</div>
+        <div class="feature-desc">Original, Subtle, Elevated, Bold, Soft, Sharp, Neon, Glass.</div>
+      </div>
+      <div class="feature reveal reveal-delay-1">
+        <div class="feature-icon">&#9673;</div>
+        <div class="feature-title">Authentic Preview</div>
+        <div class="feature-desc">Your real element translated to web for the preview, then back to your language on copy.</div>
+      </div>
+      <div class="feature reveal reveal-delay-2">
+        <div class="feature-icon">&#9731;</div>
+        <div class="feature-title">Any Language</div>
+        <div class="feature-desc">Flutter, SwiftUI, React Native, CSS, SVG, JSON — preview in HTML, output in your stack.</div>
+      </div>
+      <div class="feature reveal reveal-delay-3">
+        <div class="feature-icon">!</div>
+        <div class="feature-title">Instructed Suggestions</div>
+        <div class="feature-desc">AGENTS.md instructs the agent to suggest it after iterations or vague feedback — but <code>/ai-fine-tuner</code> is always the most reliable trigger.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTPUT FORMATS -->
+  <section class="formats reveal" id="formats">
+    <div class="formats-header">
+      <div class="section-label">Output formats</div>
+      <div class="section-title">Any language. Any platform.</div>
+      <p class="section-desc">The preview is always web-based, but the output translates to your stack automatically. Works with any programming language or framework.</p>
+    </div>
+    <div class="formats-grid">
+      <div class="format reveal reveal-delay-1"><div class="format-name">CSS</div><div class="format-example">border-radius: 12px;</div></div>
+      <div class="format reveal reveal-delay-1"><div class="format-name">Tailwind</div><div class="format-example">rounded-xl shadow-lg</div></div>
+      <div class="format reveal reveal-delay-2"><div class="format-name">Flutter</div><div class="format-example">BorderRadius.circular(12)</div></div>
+      <div class="format reveal reveal-delay-2"><div class="format-name">SwiftUI</div><div class="format-example">.cornerRadius(12)</div></div>
+      <div class="format reveal reveal-delay-3"><div class="format-name">React Native</div><div class="format-example">borderRadius: 12</div></div>
+      <div class="format reveal reveal-delay-3"><div class="format-name">JSON</div><div class="format-example">{"borderRadius": 12}</div></div>
+    </div>
+  </section>
+
+  <!-- TOKEN SAVINGS -->
+  <section class="tokens reveal" id="tokens">
+    <div class="tokens-header">
+      <div class="section-label">Token efficient</div>
+      <div class="section-title">60% fewer tokens per session</div>
+      <p class="section-desc">One round-trip instead of ten. Perfect values because you can see them live.</p>
+    </div>
+    <div class="tokens-compare">
+      <div class="tokens-card reveal reveal-delay-1">
+        <div class="tokens-card-label without">Without Fine-Tuner</div>
+        <div class="tokens-line"><span>"make the shadow bigger"</span><span class="tokens-val">~700</span></div>
+        <div class="tokens-line"><span>"too much, try 12px"</span><span class="tokens-val">~700</span></div>
+        <div class="tokens-line"><span>"add some spread"</span><span class="tokens-val">~700</span></div>
+        <div class="tokens-line"><span>"softer color"</span><span class="tokens-val">~700</span></div>
+        <div class="tokens-line"><span>...5-10 more rounds...</span><span class="tokens-val">~3,500+</span></div>
+        <div class="tokens-total"><span>Total</span><span class="tokens-val" style="color:var(--text-faint)">~6,000-10,000</span></div>
+      </div>
+      <div class="tokens-card reveal reveal-delay-2">
+        <div class="tokens-card-label with">With Fine-Tuner</div>
+        <div class="tokens-line"><span>"fine-tune the shadow"</span><span class="tokens-val">~200</span></div>
+        <div class="tokens-line"><span>Agent generates tuner</span><span class="tokens-val">~3,000</span></div>
+        <div class="tokens-line"><span>You drag sliders</span><span class="tokens-val" style="color:var(--green)">0</span></div>
+        <div class="tokens-line"><span>"apply these values"</span><span class="tokens-val">~700</span></div>
+        <div class="tokens-total"><span>Total</span><span class="tokens-val" style="color:var(--accent)">~3,900</span></div>
+      </div>
+    </div>
+    <div class="tokens-saved reveal">One round-trip · Perfect values · Zero guessing</div>
+  </section>
+
+  <!-- INTEGRATION DEPTH -->
+  <section class="depth reveal">
+    <div style="text-align:center;margin-bottom:36px;">
+      <div class="section-label">Integration depth</div>
+      <div class="section-title">Strongest where it matters</div>
+      <p class="section-desc" style="margin:0 auto;">Claude Code gets the deepest integration via skill matching. All other platforms use AGENTS.md instructions — the agent follows them, but they're not enforced by the platform.</p>
+    </div>
+    <div class="depth-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Claude Code</th>
+            <th>Codex</th>
+            <th>Cursor</th>
+            <th>Others</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Invoke command</td>
+            <td><strong><code>/ai-fine-tuner</code></strong></td>
+            <td><code>$ai-fine-tuner</code></td>
+            <td><code>/ai-fine-tuner</code></td>
+            <td><code>@</code> or <code>/</code></td>
+          </tr>
+          <tr>
+            <td>Proactive after iterations</td>
+            <td>Skill body</td>
+            <td>AGENTS.md</td>
+            <td>AGENTS.md</td>
+            <td>AGENTS.md</td>
+          </tr>
+          <tr>
+            <td>Plugin install</td>
+            <td><strong>One command</strong></td>
+            <td>Installer</td>
+            <td>Installer</td>
+            <td>Installer</td>
+          </tr>
+          <tr>
+            <td>Confirm before generating</td>
+            <td>Enforced</td>
+            <td>Instructed</td>
+            <td>Instructed</td>
+            <td>Instructed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--text-faint);margin-top:20px;">Others: Windsurf, Cline, Aider, Copilot, bolt.new, Lovable, Replit Agent — fully functional via AGENTS.md.</p>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="install reveal" id="install">
+    <div class="install-header">
+      <div class="section-label">Quick install</div>
+      <div class="section-title">Pick your platform</div>
+      <p class="section-desc">One-command installers for every major AI coding agent. Plugin, skill, or AGENTS.md — your choice.</p>
+    </div>
+    <div class="install-tabs">
+      <button class="install-tab active" onclick="showInstall('claude-plugin')">Claude Plugin</button>
+      <button class="install-tab" onclick="showInstall('claude-cli')">Claude CLI</button>
+      <button class="install-tab" onclick="showInstall('claude-desktop')">Claude Desktop</button>
+      <button class="install-tab" onclick="showInstall('codex')">Codex</button>
+      <button class="install-tab" onclick="showInstall('cursor')">Cursor</button>
+      <button class="install-tab" onclick="showInstall('windsurf')">Windsurf</button>
+      <button class="install-tab" onclick="showInstall('cline')">Cline</button>
+      <button class="install-tab" onclick="showInstall('aider')">Aider</button>
+      <button class="install-tab" onclick="showInstall('other')">Other</button>
+    </div>
+    <div id="install-claude-plugin" class="install-panel active">
+      <div class="install-code">
+        <span class="comment"># Install as a plugin from GitHub</span><br>
+        <span class="cmd">claude plugin install</span> ai-fine-tuner@https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <br>
+        <span class="comment"># Manage</span><br>
+        <span class="cmd">claude plugin enable</span> ai-fine-tuner<br>
+        <span class="cmd">claude plugin update</span> ai-fine-tuner
+      </div>
+    </div>
+    <div id="install-claude-cli" class="install-panel">
+      <div class="install-code">
+        <span class="comment"># Install as a skill via CLI</span><br>
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-claude.sh</span>
+      </div>
+    </div>
+    <div id="install-claude-desktop" class="install-panel">
+      <div class="install-code">
+        <span class="comment"># Claude Desktop (GUI)</span><br>
+        <span class="comment"># 1. Open Customize → Skills</span><br>
+        <span class="comment"># 2. Click + → Upload a skill</span><br>
+        <span class="comment"># 3. Upload the ZIP (skill + templates)</span><br>
+        <br>
+        <span class="comment"># Create the ZIP:</span><br>
+        <span class="cmd">zip</span> -r ai-fine-tuner.zip skills/ assets/ AGENTS.md
+      </div>
+    </div>
+    <div id="install-codex" class="install-panel">
+      <div class="install-code">
+        <span class="comment"># Clone and run the installer</span><br>
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-codex.sh</span>
+      </div>
+    </div>
+    <div id="install-cursor" class="install-panel">
+      <div class="install-code">
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-cursor.sh</span><br>
+        <br>
+        <span class="comment"># The installer copies AGENTS.md + templates</span><br>
+        <span class="comment"># to your project automatically</span>
+      </div>
+    </div>
+    <div id="install-windsurf" class="install-panel">
+      <div class="install-code">
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-windsurf.sh</span><br>
+        <br>
+        <span class="comment"># Copies AGENTS.md + templates to project</span>
+      </div>
+    </div>
+    <div id="install-cline" class="install-panel">
+      <div class="install-code">
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-cline.sh</span><br>
+        <br>
+        <span class="comment"># Copies AGENTS.md + templates. Supports project/global</span>
+      </div>
+    </div>
+    <div id="install-aider" class="install-panel">
+      <div class="install-code">
+        <span class="cmd">git clone</span> https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git<br>
+        <span class="cmd">cd</span> ai-fine-tuner<br>
+        <span class="cmd">./install-aider.sh</span><br>
+        <br>
+        <span class="comment"># Copies AGENTS.md + templates, configures .aider.conf.yml</span>
+      </div>
+    </div>
+    <div id="install-other" class="install-panel">
+      <div class="install-code">
+        <span class="comment"># Works with any agent that reads AGENTS.md</span><br>
+        <span class="comment"># GitHub Copilot, Google Jules, Gemini CLI, Devin, etc.</span><br>
+        <br>
+        <span class="cmd">cp</span> AGENTS.md /path/to/your/project/<br>
+        <span class="cmd">cp</span> -r assets/templates /path/to/your/project/.fine-tune/templates<br>
+        <br>
+        <span class="comment"># Templates are optional — the agent can generate</span><br>
+        <span class="comment"># from the spec in AGENTS.md if not found</span><br>
+        <span class="comment"># Adopted by 20+ tools — agentskills.io</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-name">Created by Muhamad Jawdat Salem Alakoum</div>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/muhamad-jawdat-salem-alakoum-a79742bb/" class="footer-link" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://yottocode.com" class="footer-link" target="_blank" rel="noopener">YottoCode</a>
+      <a href="https://ancientprayers.bandcamp.com" class="footer-link" target="_blank" rel="noopener">Ancient Prayers</a>
+      <a href="https://github.com/muhamadjawdatsalemalakoum/aifinetuner" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="footer-copy">Source Available License — free to use as a skill or plugin. See LICENSE.</div>
+  </footer>
+
+  <script>
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    function showInstall(id) {
+      document.querySelectorAll('.install-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('install-' + id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    const sections = ['demos', 'features', 'install'];
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY + 100;
+      let active = '';
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= y) active = id;
+      });
+      document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + active);
+      });
+    });
+  </script>
+</body>
+</html>

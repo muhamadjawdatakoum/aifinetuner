@@ -1,0 +1,32 @@
+# AI Fine-Tuner
+
+## What it is
+AI Fine-Tuner is a plugin/skill for AI coding agents that generates interactive HTML fine-tuning interfaces with sliders and live preview. Instead of iterating on visual values in chat ("make the shadow bigger... no less... try 12px"), the agent generates a single HTML page where the user drags sliders and sees their actual element update in real-time.
+
+## Key features
+- Bespoke UI: every tuner is generated from the user's actual element and parameters
+- Pre-built templates: the agent fills in placeholders, not the infrastructure
+- Infinite canvas: Figma-style pinch-to-zoom (25%-400%) and pan
+- Any language: preview is HTML, output translates to CSS, Tailwind, Flutter, SwiftUI, React Native, JSON
+- Animations: full keyframe animation preview with timing, easing, and transform controls
+- Any visual property: shadows, colors, spacing, radii, typography, transforms, gradients, SVG attributes
+
+## How to use it
+- Claude Code: type /ai-fine-tuner
+- OpenAI Codex: type $ai-fine-tuner
+- Cursor: type /ai-fine-tuner
+- Windsurf: type @ai-fine-tuner
+- Cline: type /ai-fine-tuner
+- Aider: /read AGENTS.md then ask to fine-tune
+
+## Installation
+- Claude Code plugin: claude plugin install ai-fine-tuner@https://github.com/muhamadjawdatsalemalakoum/aifinetuner.git
+- Other platforms: clone the repo and run the platform-specific installer (install-claude.sh, install-codex.sh, install-cursor.sh, etc.)
+
+## License
+Source Available — free to use as an AI agent skill or plugin. Commercial redistribution or competing products prohibited.
+
+## Created by
+Muhamad Jawdat Salem Alakoum
+Website: https://muhamadjawdatsalemalakoum.github.io/aifinetuner/
+GitHub: https://github.com/muhamadjawdatsalemalakoum/aifinetuner
