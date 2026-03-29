@@ -1,13 +1,13 @@
 ```
     ╔═══════════════════════════════════════════════════╗
     ║                                                   ║
-    ║          ◆  A I   F I N E - T U N E R  ◆         ║
+    ║          ◆  A I   F I N E - T U N E R  ◆          ║
     ║                                                   ║
     ║             ═══●═══   ═══●═══   ═══●═══           ║
-    ║               ▲         ▲         ▲               ║
-    ║             shadow    radius    color              ║
+    ║                ▲         ▲         ▲              ║
+    ║              shadow    radius    color            ║
     ║                                                   ║
-    ║         drag. see. decide. ship.                   ║
+    ║              drag. see. decide. ship.             ║
     ║                                                   ║
     ╚═══════════════════════════════════════════════════╝
 ```
