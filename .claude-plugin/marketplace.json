@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "aifinetuner",
+  "version": "1.0.0",
+  "description": "AI Fine-Tuner plugin marketplace",
+  "owner": {
+    "name": "Muhamad Jawdat Salem Alakoum"
+  },
+  "plugins": [
+    {
+      "name": "ai-fine-tuner",
+      "description": "Generate interactive HTML fine-tuning GUIs with real-time sliders and live preview",
+      "source": ".",
+      "category": "development"
+    }
+  ]
+}
