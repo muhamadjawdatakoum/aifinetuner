@@ -10,7 +10,7 @@
     {
       "name": "ai-fine-tuner",
       "description": "Generate interactive HTML fine-tuning GUIs with real-time sliders and live preview",
-      "source": ".",
+      "source": "./",
       "category": "development"
     }
   ]
