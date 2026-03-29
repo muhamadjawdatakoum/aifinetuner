@@ -238,23 +238,12 @@ Templates are optional — the agent can generate from the spec in AGENTS.md if 
 
 Three working samples are included in `samples/` — open any of them locally to experience the infinite canvas, trackpad zoom/pan, and live preview before installing anything.
 
-### Single Slider — Button Shadow
-
-![Single slider template](assets/preview-single.png)
-
-One slider controlling shadow depth on a clean button. Four presets from flat to deep. Pinch-to-zoom the button to inspect the shadow edge up close, pan around, type an exact shadow value. Open `samples/single-button-glow.html` to try it.
-
-### Small Panel — Pricing Card
-
-![Small panel template](assets/preview-small.png)
-
-Three sliders: border radius, shadow blur, and an accent color picker with hue slider. Zoom into the card corners to check the radius, toggle dark mode to test contrast, edit the plan name in the live text field. Open `samples/small-pricing-card.html` to try it.
-
-### Full Sidebar — Dashboard Card
-
-![Full sidebar template](assets/preview-full.png)
-
-Twelve sliders across three groups (shadow, shape, color). Live bar chart that recolors with the accent slider, five presets from subtle to glass-morphism. Collapse the sidebar to see the card full-screen, zoom in to inspect shadow edges at 400%. Open `samples/full-dashboard-card.html` to try it.
+| Demo | Template | Controls | Try it |
+|------|----------|----------|--------|
+| **Button Shadow** | `single.html` | 1 slider + 4 presets (Flat, Subtle, Medium, Deep) | [`samples/single-button-glow.html`](samples/single-button-glow.html) |
+| **Pricing Card** | `small.html` | 3 sliders (border radius, shadow blur, accent color) | [`samples/small-pricing-card.html`](samples/small-pricing-card.html) |
+| **Dashboard Card** | `full.html` | 12 sliders across shadow, shape, and color groups | [`samples/full-dashboard-card.html`](samples/full-dashboard-card.html) |
+| **Animation Preview** | `full.html` | 8+ sliders for typography, gradient, glow, keyframe animation | [`samples/full-animation-preview.html`](samples/full-animation-preview.html) |
 
 ## Infinite Canvas Preview
 
