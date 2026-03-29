@@ -26,7 +26,7 @@ No localhost. No build step. No external dependencies. Just a self-contained HTM
 
 Works with **Claude Code** · **OpenAI Codex** · **Cursor** · **Windsurf** · **Cline** · **Aider** · **Copilot** · **bolt.new** · **Lovable** · **Replit Agent** — and any agent that reads `AGENTS.md`.
 
-## How It Works
+## How It Workswhat else is 
 
 ```
 You:   "fine-tune the shadow on this card"
